@@ -6,11 +6,26 @@ on:
   workflow_dispatch: # Allows manual trigger from GitHub dashboard
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: trend-watch-publish
+  cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
+  publishing-disabled:
+    if: vars.ENABLE_AUTO_PUBLISH != 'true'
     runs-on: ubuntu-latest
+    steps:
+      - name: Explain publishing gate
+        run: echo "Publishing is disabled. Set the repository Actions variable ENABLE_AUTO_PUBLISH to true only after reviewing the workflow and site configuration."
+
+  build-and-deploy:
+    if: vars.ENABLE_AUTO_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -22,11 +37,12 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install google-genai feedparser
+          pip install google-genai==2.34.0 feedparser==6.0.14
 
       - name: Run Trend Generation Script
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SITE_URL: ${{ vars.SITE_URL }}
         run: |
           python generate_site.py
 

@@ -23,7 +23,7 @@ jobs:
   build-and-deploy:
     if: vars.ENABLE_AUTO_PUBLISH == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 8
     permissions:
       contents: write
     steps:
@@ -44,6 +44,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SITE_URL: ${{ vars.SITE_URL }}
           CF_WEB_ANALYTICS_TOKEN: ${{ vars.CF_WEB_ANALYTICS_TOKEN }}
+          PYTHONUNBUFFERED: '1'
         run: |
           python generate_site.py
 

@@ -107,6 +107,91 @@ class GoogleTrendsFeedTests(unittest.TestCase):
 
 
 class GeminiRetryTests(unittest.TestCase):
+    def test_scheduled_run_respects_generation_request_cap(self):
+        trends = [
+            {"title": f"Topic {index}", "slug": f"topic-{index}", "news": []}
+            for index in range(5)
+        ]
+        original_output_dir = generate_site.NICHE_CONFIG["output_dir"]
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            generate_site.NICHE_CONFIG["output_dir"] = temp_dir
+            try:
+                with (
+                    patch.object(generate_site, "get_site_url", return_value=""),
+                    patch.object(generate_site, "synchronize_canonical_urls"),
+                    patch.object(generate_site, "fetch_google_trends", return_value=trends),
+                    patch.object(generate_site, "has_source_evidence", return_value=True),
+                    patch.object(
+                        generate_site,
+                        "generate_ai_content_with_retry",
+                        return_value=({"meta_description": "sample", "html_content": "<p>sample</p>"}, 1),
+                    ) as generate,
+                    patch.object(generate_site, "build_page_html", return_value="<html></html>"),
+                    patch.object(generate_site, "update_index_page"),
+                    patch.object(generate_site, "install_cloudflare_beacon"),
+                ):
+                    generate_site.main()
+            finally:
+                generate_site.NICHE_CONFIG["output_dir"] = original_output_dir
+
+        self.assertEqual(generate.call_count, generate_site.MAX_TREND_GENERATION_CALLS)
+        self.assertEqual(
+            [call.args[1] for call in generate.call_args_list],
+            [3, 2, 1],
+        )
+
+    def test_quota_exhaustion_stops_without_retrying(self):
+        quota_error = errors.ClientError(
+            429,
+            {"error": {"message": "Generate requests per day limit exceeded"}},
+        )
+
+        with patch.object(
+            generate_site,
+            "generate_ai_content",
+            side_effect=quota_error,
+        ) as generate:
+            with self.assertRaises(generate_site.GeminiQuotaExceeded):
+                generate_site.generate_ai_content_with_retry(
+                    {"title": "Sample topic"},
+                    request_budget=5,
+                )
+
+        generate.assert_called_once()
+
+    def test_quota_exhaustion_stops_remaining_trends_and_finishes_site_updates(self):
+        quota_error = generate_site.GeminiQuotaExceeded()
+        trends = [
+            {"title": "First topic", "slug": "first-topic", "news": []},
+            {"title": "Second topic", "slug": "second-topic", "news": []},
+        ]
+        original_output_dir = generate_site.NICHE_CONFIG["output_dir"]
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            generate_site.NICHE_CONFIG["output_dir"] = temp_dir
+            try:
+                with (
+                    patch.object(generate_site, "get_site_url", return_value=""),
+                    patch.object(generate_site, "synchronize_canonical_urls"),
+                    patch.object(generate_site, "fetch_google_trends", return_value=trends),
+                    patch.object(generate_site, "has_source_evidence", return_value=True),
+                    patch.object(
+                        generate_site,
+                        "generate_ai_content_with_retry",
+                        side_effect=quota_error,
+                    ) as generate,
+                    patch.object(generate_site, "update_index_page") as update_index,
+                    patch.object(generate_site, "install_cloudflare_beacon"),
+                ):
+                    generate_site.main()
+                self.assertTrue((Path(temp_dir) / "robots.txt").is_file())
+            finally:
+                generate_site.NICHE_CONFIG["output_dir"] = original_output_dir
+
+        generate.assert_called_once()
+        update_index.assert_called_once_with([])
+
     def test_retries_server_timeout_once_within_budget(self):
         timeout = errors.ServerError(
             504,

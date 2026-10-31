@@ -40,7 +40,8 @@ REQUIRED_CONTENT_HEADINGS = [
     "Frequently Asked Questions",
 ]
 MAX_HOMEPAGE_TREND_CARDS = 50
-MAX_TREND_GENERATION_CALLS = 5
+# Six scheduled runs can use at most 18 requests, leaving room under Gemini's 20/day free quota.
+MAX_TREND_GENERATION_CALLS = 3
 ARTICLE_REVIEW_AFTER_DAYS = 7
 MAX_GEMINI_ATTEMPTS_PER_TREND = 2
 GEMINI_RETRY_DELAY_SECONDS = 4
@@ -763,6 +764,14 @@ def generate_ai_content_with_retry(trend, request_budget):
     for attempt in range(1, attempts + 1):
         try:
             return generate_ai_content(trend), attempt
+        except errors.ClientError as error:
+            if error.code != 429:
+                raise
+            print(
+                f"Gemini quota exhausted while processing {trend['title']}; "
+                "stopping AI generation for this run."
+            )
+            raise GeminiQuotaExceeded from error
         except errors.ServerError as error:
             if error.code not in RETRYABLE_GEMINI_STATUS_CODES:
                 raise
@@ -779,6 +788,10 @@ def generate_ai_content_with_retry(trend, request_budget):
             time.sleep(GEMINI_RETRY_DELAY_SECONDS)
 
     return None, attempts
+
+
+class GeminiQuotaExceeded(RuntimeError):
+    """Signals that the run must stop making Gemini requests due to quota limits."""
 
 
 def build_page_html(trend, ai_data):
@@ -1200,10 +1213,17 @@ def main():
         print(f"Processing trend: {trend['title']}")
         trend["source_fingerprint"] = fingerprint
         trend["category"] = trend_category(trend["title"])
-        ai_data, requests_used = generate_ai_content_with_retry(
-            trend,
-            remaining_requests,
-        )
+        try:
+            ai_data, requests_used = generate_ai_content_with_retry(
+                trend,
+                remaining_requests,
+            )
+        except GeminiQuotaExceeded:
+            print(
+                "Deferring remaining trend generation until Gemini quota is available; "
+                "continuing with the existing site content."
+            )
+            break
         ai_calls += requests_used
         
         if not ai_data:

@@ -1,7 +1,9 @@
 name: Automated Programmatic SEO Engine
 
 on:
-  workflow_dispatch: # Publishing requires an intentional manual run.
+  schedule:
+    - cron: '0 */4 * * *' # Runs every four hours automatically.
+  workflow_dispatch: # Allows an intentional manual run from GitHub Actions.
 
 permissions:
   contents: read
@@ -11,15 +13,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  publishing-disabled:
-    if: vars.ENABLE_AUTO_PUBLISH != 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Explain publishing gate
-        run: echo "Publishing is disabled. Set ENABLE_AUTO_PUBLISH to true only for an intentional, reviewed manual run."
-
   build-and-deploy:
-    if: github.event_name == 'workflow_dispatch' && vars.ENABLE_AUTO_PUBLISH == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 8
     permissions:

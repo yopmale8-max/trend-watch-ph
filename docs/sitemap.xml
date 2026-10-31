@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://yourdomain.com/index.html</loc>
-    <lastmod>2026-10-29</lastmod>
-    <changefreq>hourly</changefreq>
-    <priority>1.0</priority>
+    <loc>https://trendwatchph.netlify.app/about.html</loc>
+    <lastmod>2026-10-31</lastmod>
   </url>
   <url>
-    <loc>https://yourdomain.com/michelin-guide-philippines-2027.html</loc>
-    <lastmod>2026-10-29</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
+    <loc>https://trendwatchph.netlify.app/contact.html</loc>
+    <lastmod>2026-10-31</lastmod>
   </url>
   <url>
-    <loc>https://yourdomain.com/pvl.html</loc>
-    <lastmod>2026-10-29</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
+    <loc>https://trendwatchph.netlify.app/elena-rybakina.html</loc>
+    <lastmod>2026-10-31</lastmod>
   </url>
   <url>
-    <loc>https://yourdomain.com/new-macbook-pro-m6.html</loc>
-    <lastmod>2026-10-29</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
+    <loc>https://trendwatchph.netlify.app/</loc>
+    <lastmod>2026-10-31</lastmod>
   </url>
   <url>
-    <loc>https://yourdomain.com/pba-schedule.html</loc>
-    <lastmod>2026-10-29</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
+    <loc>https://trendwatchph.netlify.app/michelin-guide-philippines-2027.html</loc>
+    <lastmod>2026-10-31</lastmod>
   </url>
   <url>
-    <loc>https://yourdomain.com/elena-rybakina.html</loc>
-    <lastmod>2026-10-29</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
+    <loc>https://trendwatchph.netlify.app/new-macbook-pro-m6.html</loc>
+    <lastmod>2026-10-31</lastmod>
+  </url>
+  <url>
+    <loc>https://trendwatchph.netlify.app/pba-schedule.html</loc>
+    <lastmod>2026-10-31</lastmod>
+  </url>
+  <url>
+    <loc>https://trendwatchph.netlify.app/privacy-policy.html</loc>
+    <lastmod>2026-10-31</lastmod>
+  </url>
+  <url>
+    <loc>https://trendwatchph.netlify.app/pvl.html</loc>
+    <lastmod>2026-10-31</lastmod>
   </url>
 </urlset>

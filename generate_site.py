@@ -2,11 +2,14 @@ import os
 import re
 import json
 import feedparser
+from pathlib import Path
 from html import escape
 from html.parser import HTMLParser
-from datetime import datetime
+from datetime import datetime, timezone
 from google import genai
-from urllib.parse import urlsplit
+from urllib.error import HTTPError, URLError
+from urllib.parse import quote, urlsplit
+from urllib.request import Request, urlopen
 
 # ==========================================
 # CONFIGURATION & CONSTANTS
@@ -16,11 +19,15 @@ NICHE_CONFIG = {
     "niche_focus": "Consumer safety recalls, trending public news, tech updates, and viral alerts in the Philippines and globally.",
     "rss_url": "https://trends.google.com/trending/rss?geo=PH",
     "output_dir": "docs",
-    "site_url": os.environ.get("SITE_URL", "").rstrip("/"),
+    "site_url": (
+        os.environ.get("SITE_URL", "").strip().rstrip("/")
+        or "https://trendwatchph.netlify.app"
+    ),
 }
 
 ALLOWED_CONTENT_TAGS = {"h2", "p", "ul", "li", "strong"}
 REQUIRED_CONTENT_HEADINGS = ["Overview", "Key Details", "Frequently Asked Questions"]
+MAX_HOMEPAGE_TREND_CARDS = 50
 
 # Negative keywords to protect domain reputation and ad policy compliance
 BLOCKED_KEYWORDS = [
@@ -81,6 +88,127 @@ class SafeContentParser(HTMLParser):
 
     def handle_decl(self, decl):
         self.valid = False
+
+
+class TrendCardParser(HTMLParser):
+    """Reads existing generated trend cards from the homepage archive."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.cards = []
+        self.current = None
+        self.card_depth = 0
+        self.in_badge = False
+        self.in_link = False
+        self.in_description = False
+        self.in_updated = False
+        self.badge_text = []
+        self.title_text = []
+
+    def handle_starttag(self, tag, attrs):
+        attributes = dict(attrs)
+        classes = attributes.get("class", "").split()
+        if tag == "div" and "trend-card" in classes and self.current is None:
+            self.current = {
+                "slug": "",
+                "title": "",
+                "traffic": "",
+                "description": "",
+                "updated_at": "",
+            }
+            self.card_depth = 1
+            return
+        if self.current is None:
+            return
+        if tag == "div":
+            self.card_depth += 1
+        elif tag == "span" and "badge" in classes:
+            self.in_badge = True
+        elif tag == "span" and "card-description" in classes:
+            self.in_description = True
+        elif tag == "span" and "card-updated" in classes:
+            self.in_updated = True
+        elif tag == "a":
+            self.in_link = True
+            self.current["slug"] = attributes.get("href", "")
+
+    def handle_endtag(self, tag):
+        if self.current is None:
+            return
+        if tag == "span":
+            self.in_badge = False
+            self.in_description = False
+            self.in_updated = False
+        elif tag == "a":
+            self.in_link = False
+        elif tag == "div":
+            self.card_depth -= 1
+            if self.card_depth == 0:
+                slug = self.current["slug"]
+                match = re.fullmatch(r"([a-z0-9]+(?:-[a-z0-9]+)*)\.html", slug)
+                if match and self.current["title"].strip():
+                    self.current["slug"] = match.group(1)
+                    self.current["traffic"] = self.current["traffic"].strip()
+                    self.cards.append(self.current)
+                self.current = None
+
+    def handle_data(self, data):
+        if self.in_badge:
+            self.current["traffic"] += data
+        if self.in_link:
+            self.current["title"] += data
+        if self.in_description:
+            self.current["description"] += data
+        if self.in_updated:
+            self.current["updated_at"] += data
+
+
+class MetaDescriptionParser(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.description = ""
+        self.timestamp = ""
+        self.in_timestamp = False
+
+    def handle_starttag(self, tag, attrs):
+        attributes = dict(attrs)
+        if tag == "meta" and attributes.get("name", "").lower() == "description":
+            self.description = attributes.get("content", "").strip()
+        if tag == "span" and "timestamp" in attributes.get("class", "").split():
+            self.in_timestamp = True
+
+    def handle_endtag(self, tag):
+        if tag == "span":
+            self.in_timestamp = False
+
+    def handle_data(self, data):
+        if self.in_timestamp:
+            self.timestamp += data
+
+
+def parse_updated_at(value):
+    if not value:
+        return ""
+    try:
+        parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+    except ValueError:
+        match = re.search(r"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) UTC", value)
+        if not match:
+            return ""
+        parsed = datetime.strptime(match.group(1), "%Y-%m-%d %H:%M:%S").replace(
+            tzinfo=timezone.utc
+        )
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+def display_updated_at(value):
+    normalized = parse_updated_at(value)
+    if not normalized:
+        return ""
+    parsed = datetime.fromisoformat(normalized.replace("Z", "+00:00"))
+    return f"Updated {parsed:%b %d, %Y}"
 
 
 def validate_ai_content(ai_data):
@@ -145,6 +273,46 @@ def get_site_url():
     return site_url.rstrip("/")
 
 
+def cloudflare_beacon_markup():
+    """Returns the official Cloudflare Web Analytics beacon when configured."""
+    token = os.environ.get("CF_WEB_ANALYTICS_TOKEN", "").strip()
+    if not token:
+        return ""
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", token):
+        raise ValueError("CF_WEB_ANALYTICS_TOKEN contains invalid characters")
+
+    beacon_config = json.dumps({"token": token}, separators=(",", ":"))
+    return (
+        '<script type="module" id="cloudflare-web-analytics" '
+        'src="https://static.cloudflareinsights.com/beacon.min.js" '
+        f"data-cf-beacon='{beacon_config}'></script>"
+    )
+
+
+def install_cloudflare_beacon():
+    """Adds the beacon to published HTML pages without changing other page content."""
+    beacon = cloudflare_beacon_markup()
+    if not beacon:
+        print("Cloudflare Web Analytics token is not configured; beacon installation skipped.")
+        return
+
+    output_dir = Path(NICHE_CONFIG["output_dir"])
+    for page_path in output_dir.glob("*.html"):
+        page = page_path.read_text(encoding="utf-8")
+        if 'id="cloudflare-web-analytics"' in page:
+            continue
+        updated_page, replacements = re.subn(
+            r"</head\s*>",
+            f"    {beacon}\n</head>",
+            page,
+            count=1,
+            flags=re.IGNORECASE,
+        )
+        if not replacements:
+            raise ValueError(f"Cannot install analytics beacon: {page_path} has no closing head tag")
+        page_path.write_text(updated_page, encoding="utf-8")
+
+
 def is_safe_trend(title):
     """Filters out sensitive or tragic news to comply with AdSense policies."""
     lower_title = title.lower()
@@ -155,13 +323,27 @@ def is_safe_trend(title):
 
 def fetch_google_trends():
     """Fetches real-time trends from Google Trends RSS feed."""
-    print(f"Fetching RSS feed from {NICHE_CONFIG['rss_url']}...")
-    feed = feedparser.parse(NICHE_CONFIG['rss_url'])
+    rss_url = NICHE_CONFIG["rss_url"]
+    print(f"Fetching RSS feed from {rss_url}...")
+    request = Request(rss_url, headers={"User-Agent": "TrendWatchPhilippines/1.0"})
+    try:
+        with urlopen(request, timeout=30) as response:
+            if response.status != 200:
+                raise RuntimeError(f"Google Trends RSS returned HTTP {response.status}")
+            feed = feedparser.parse(response.read())
+    except (HTTPError, URLError, TimeoutError) as error:
+        raise RuntimeError(f"Could not retrieve Google Trends RSS: {error}") from error
+
+    if feed.get("bozo"):
+        raise RuntimeError(f"Google Trends RSS returned invalid data: {feed.bozo_exception}")
+    entries = feed.get("entries")
+    if not isinstance(entries, list) or not entries:
+        raise RuntimeError("Google Trends RSS returned no trend entries")
     
     valid_trends = []
     seen_slugs = set()
-    for entry in feed.entries:
-        title = entry.title
+    for entry in entries:
+        title = entry.get("title")
         if not isinstance(title, str) or not title.strip():
             print("Skipping trend with an empty or invalid title.")
             continue
@@ -253,7 +435,14 @@ def generate_ai_content(trend):
 def build_page_html(trend, ai_data):
     """Builds a responsive HTML page from validated AI content and escaped source data."""
     ai_data = validate_ai_content(ai_data)
-    current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+    updated_at = parse_updated_at(trend.get("updated_at", ""))
+    if not updated_at:
+        updated_at = datetime.now(timezone.utc).isoformat(timespec="seconds").replace(
+            "+00:00", "Z"
+        )
+    current_time = datetime.fromisoformat(updated_at.replace("Z", "+00:00")).strftime(
+        "%Y-%m-%d %H:%M:%S UTC"
+    )
     escaped_title = escape(trend["title"])
     escaped_description = escape(ai_data["meta_description"], quote=True)
     site_url = get_site_url()
@@ -349,26 +538,229 @@ def build_page_html(trend, ai_data):
     </div>
 
     <footer>
-        <p>&copy; {datetime.utcnow().year} {NICHE_CONFIG['site_name']}. All rights reserved. Automated programmatic publishing.</p>
+        <p>&copy; {datetime.utcnow().year} {escape(NICHE_CONFIG['site_name'])}.</p>
+        <p>Real-Time Search Insights &amp; News Breakdowns. Automated content may be incomplete or inaccurate.</p>
+        <nav aria-label="Site information">
+            <a href="index.html">Home</a> ·
+            <a href="about.html">About Us</a> ·
+            <a href="contact.html">Contact</a> ·
+            <a href="privacy-policy.html">Privacy Policy</a>
+        </nav>
     </footer>
 </body>
 </html>
 """
     return html
 
-def generate_sitemap(generated_trends, site_url):
-    """Builds a sitemap only when a verified HTTPS site URL is configured."""
+
+def update_index_page(generated_trends):
+    """Merges recent trends into a persistent archive and renders the homepage."""
+    index_path = Path(NICHE_CONFIG["output_dir"]) / "index.html"
+    if not index_path.is_file():
+        raise FileNotFoundError(f"Homepage not found: {index_path}")
+
+    index_html = index_path.read_text(encoding="utf-8")
+    marker_pattern = re.compile(
+        r"(?P<start><!-- TREND_CARDS_START -->).*?(?P<end><!-- TREND_CARDS_END -->)",
+        flags=re.DOTALL,
+    )
+    match = marker_pattern.search(index_html)
+    if not match:
+        raise ValueError(f"Homepage is missing the trend-card archive markers: {index_path}")
+
+    parser = TrendCardParser()
+    parser.feed(match.group(0))
+    archive_path = index_path.parent / "trends_archive.json"
+    archive = []
+    if archive_path.exists():
+        archived_data = json.loads(archive_path.read_text(encoding="utf-8"))
+        if not isinstance(archived_data, list):
+            raise ValueError(f"Trend archive must contain a JSON list: {archive_path}")
+        for item in archived_data:
+            if (
+                not isinstance(item, dict)
+                or not isinstance(item.get("slug"), str)
+                or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", item["slug"])
+                or not isinstance(item.get("title"), str)
+                or not isinstance(item.get("traffic"), str)
+                or not isinstance(item.get("description"), str)
+                or not isinstance(item.get("updated_at", ""), str)
+            ):
+                raise ValueError(f"Trend archive contains an invalid entry: {archive_path}")
+            archive.append({
+                "slug": item["slug"],
+                "title": item["title"],
+                "traffic": item["traffic"],
+                "description": item["description"],
+                "updated_at": parse_updated_at(item.get("updated_at", "")),
+            })
+
+    archived_slugs = {item["slug"] for item in archive}
+    for card in parser.cards:
+        page_path = index_path.parent / f"{card['slug']}.html"
+        if not page_path.is_file() or card["slug"] in archived_slugs:
+            continue
+        metadata = MetaDescriptionParser()
+        metadata.feed(page_path.read_text(encoding="utf-8"))
+        archive.append({
+            "slug": card["slug"],
+            "title": card["title"].strip(),
+            "traffic": card["traffic"],
+            "description": (
+                card["description"].strip()
+                or metadata.description
+                or "Explore this trend breakdown and its linked sources."
+            ),
+            "updated_at": (
+                parse_updated_at(card["updated_at"])
+                or parse_updated_at(metadata.timestamp)
+            ),
+        })
+        archived_slugs.add(card["slug"])
+
+    new_cards = []
+    for trend in generated_trends:
+        description = trend.get("meta_description")
+        if not isinstance(description, str) or not description.strip():
+            raise ValueError(f"Generated trend is missing a meta description: {trend['slug']}")
+        new_cards.append({
+            "slug": trend["slug"],
+            "title": trend["title"],
+            "traffic": str(trend["traffic"]),
+            "description": description.strip(),
+            "updated_at": parse_updated_at(trend.get("updated_at", "")),
+        })
+
+    ordered_cards = []
+    seen_slugs = set()
+    for card in new_cards + archive:
+        if card["slug"] in seen_slugs:
+            continue
+        if not (index_path.parent / f"{card['slug']}.html").is_file():
+            continue
+        ordered_cards.append(card)
+        seen_slugs.add(card["slug"])
+    ordered_cards.sort(
+        key=lambda card: card["updated_at"],
+        reverse=True,
+    )
+    ordered_cards = ordered_cards[:MAX_HOMEPAGE_TREND_CARDS]
+
+    archive_path.write_text(
+        json.dumps(ordered_cards, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    cards_html = "\n".join(
+        f"""
+            <div class="trend-card">
+                <span class="badge">🔥 {escape(card["traffic"])}</span>
+                <a href="{escape(card["slug"], quote=True)}.html">{escape(card["title"])}</a>
+                <span class="card-description">{escape(card["description"])}</span>
+                {f'<span class="card-updated">{escape(display_updated_at(card["updated_at"]))}</span>' if card["updated_at"] else ""}
+            </div>"""
+        for card in ordered_cards
+    )
+    replacement = (
+        f"{match.group('start')}\n{cards_html}\n        {match.group('end')}"
+        if cards_html
+        else f"{match.group('start')}{match.group('end')}"
+    )
+    updated_html = index_html[:match.start()] + replacement + index_html[match.end():]
+    index_path.write_text(updated_html, encoding="utf-8")
+
+
+def synchronize_canonical_urls(site_url):
+    """Updates existing page canonicals or removes known placeholder canonicals."""
+    output_dir = Path(NICHE_CONFIG["output_dir"])
+    placeholder_pattern = re.compile(
+        r"\s*<link\b(?=[^>]*\brel=[\"']canonical[\"'])"
+        r"(?=[^>]*\bhref=[\"']https://yourdomain\.com/[^\"']*[\"'])[^>]*>\s*",
+        flags=re.IGNORECASE,
+    )
+    canonical_pattern = re.compile(
+        r"<link\b(?=[^>]*\brel=[\"']canonical[\"'])[^>]*>",
+        flags=re.IGNORECASE,
+    )
+
+    for page_path in output_dir.glob("*.html"):
+        if page_path.name == "privacy.html":
+            continue
+        page = page_path.read_text(encoding="utf-8")
+        if not site_url:
+            updated_page = placeholder_pattern.sub("\n", page)
+        else:
+            page_url = f"{site_url}/" if page_path.name == "index.html" else (
+                f"{site_url}/{quote(page_path.name)}"
+            )
+            canonical = f'<link rel="canonical" href="{escape(page_url, quote=True)}">'
+            if canonical_pattern.search(page):
+                updated_page = canonical_pattern.sub(canonical, page, count=1)
+            else:
+                updated_page, replacements = re.subn(
+                    r"</head\s*>",
+                    f"    {canonical}\n</head>",
+                    page,
+                    count=1,
+                    flags=re.IGNORECASE,
+                )
+                if not replacements:
+                    raise ValueError(f"Cannot add canonical URL: {page_path} has no closing head tag")
+        if updated_page != page:
+            page_path.write_text(updated_page, encoding="utf-8")
+
+    if not site_url:
+        sitemap_path = output_dir / "sitemap.xml"
+        if sitemap_path.is_file() and "yourdomain.com" in sitemap_path.read_text(encoding="utf-8"):
+            sitemap_path.unlink()
+            print("Removed sitemap containing the unconfigured placeholder domain.")
+
+
+def generate_sitemap(site_url):
+    """Builds a sitemap for the static pages and archived trend articles."""
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    xml += '  <url>\n'
-    xml += f'    <loc>{escape(site_url)}/</loc>\n'
-    xml += f'    <lastmod>{datetime.utcnow().strftime("%Y-%m-%d")}</lastmod>\n'
-    xml += '  </url>\n'
-    
-    for t in generated_trends:
+    lastmod = datetime.utcnow().strftime("%Y-%m-%d")
+    output_dir = Path(NICHE_CONFIG["output_dir"])
+    archive_path = output_dir / "trends_archive.json"
+    if archive_path.is_file():
+        archived_data = json.loads(archive_path.read_text(encoding="utf-8"))
+        if not isinstance(archived_data, list):
+            raise ValueError(f"Trend archive must contain a JSON list: {archive_path}")
+        page_names = {
+            "index.html",
+            "about.html",
+            "contact.html",
+            "privacy-policy.html",
+            *(
+                f"{item['slug']}.html"
+                for item in archived_data
+                if isinstance(item, dict)
+                and isinstance(item.get("slug"), str)
+                and re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", item["slug"])
+            ),
+        }
+        page_paths = [output_dir / name for name in page_names]
+    else:
+        page_paths = list(output_dir.glob("*.html"))
+
+    for page_path in sorted(page_paths):
+        if not page_path.is_file():
+            continue
+        page = page_path.read_text(encoding="utf-8")
+        if re.search(
+            r'<meta\b(?=[^>]*\bname=["\']robots["\'])'
+            r'(?=[^>]*\bcontent=["\'][^"\']*\bnoindex\b)[^>]*>',
+            page,
+            flags=re.IGNORECASE,
+        ):
+            continue
+        page_url = f"{site_url}/" if page_path.name == "index.html" else (
+            f"{site_url}/{quote(page_path.name)}"
+        )
         xml += '  <url>\n'
-        xml += f'    <loc>{escape(site_url)}/{escape(t["slug"])}.html</loc>\n'
-        xml += f'    <lastmod>{datetime.utcnow().strftime("%Y-%m-%d")}</lastmod>\n'
+        xml += f'    <loc>{escape(page_url)}</loc>\n'
+        xml += f'    <lastmod>{lastmod}</lastmod>\n'
         xml += '  </url>\n'
         
     xml += '</urlset>'
@@ -376,6 +768,8 @@ def generate_sitemap(generated_trends, site_url):
 
 def main():
     os.makedirs(NICHE_CONFIG['output_dir'], exist_ok=True)
+    site_url = get_site_url()
+    synchronize_canonical_urls(site_url)
     trends = fetch_google_trends()
     
     successfully_generated = []
@@ -388,6 +782,10 @@ def main():
             print(f"Skipped/Filtered out: {trend['title']}")
             continue
             
+        trend["meta_description"] = ai_data["meta_description"]
+        trend["updated_at"] = datetime.now(timezone.utc).isoformat(
+            timespec="seconds"
+        ).replace("+00:00", "Z")
         page_html = build_page_html(trend, ai_data)
         file_path = os.path.join(NICHE_CONFIG['output_dir'], f"{trend['slug']}.html")
         
@@ -397,16 +795,18 @@ def main():
         successfully_generated.append(trend)
         print(f"Successfully generated: {trend['slug']}.html")
         
-    if successfully_generated and get_site_url():
-        sitemap_xml = generate_sitemap(successfully_generated, get_site_url())
+    update_index_page(successfully_generated)
+    print(f"Homepage archive updated (up to {MAX_HOMEPAGE_TREND_CARDS} generated trend cards).")
+
+    if site_url:
+        sitemap_xml = generate_sitemap(site_url)
         with open(os.path.join(NICHE_CONFIG['output_dir'], "sitemap.xml"), "w", encoding="utf-8") as f:
             f.write(sitemap_xml)
-            
-        print("Article pages and sitemap generated; the existing homepage was preserved.")
-    elif successfully_generated:
-        print("Article pages generated; sitemap skipped until a valid HTTPS SITE_URL is configured.")
+        print("Sitemap generated for the static pages and archived trends.")
     else:
-        print("No valid trends were generated; existing pages and sitemap were left unchanged.")
+        print("SITE_URL is not configured; canonical URLs and sitemap were not generated.")
+
+    install_cloudflare_beacon()
 
 if __name__ == "__main__":
     main()

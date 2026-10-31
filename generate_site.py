@@ -11,6 +11,7 @@ from html.parser import HTMLParser
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from google import genai
+from google.genai import errors
 from google.genai import types
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlsplit
@@ -40,6 +41,9 @@ REQUIRED_CONTENT_HEADINGS = [
 ]
 MAX_HOMEPAGE_TREND_CARDS = 50
 MAX_TREND_GENERATION_CALLS = 5
+MAX_GEMINI_ATTEMPTS_PER_TREND = 2
+GEMINI_RETRY_DELAY_SECONDS = 4
+RETRYABLE_GEMINI_STATUS_CODES = {500, 502, 503, 504}
 TREND_GENERATION_PAUSE_SECONDS = 4
 TITLE_ACRONYMS = {"DOT", "OFW", "NBA", "UNESCO", "PBA", "PVL", "PH", "M6", "WTA"}
 TITLE_WORDS = {"MACBOOK": "MacBook"}
@@ -728,6 +732,34 @@ def generate_ai_content(trend):
 
     return validate_ai_content(json.loads(text_response))
 
+
+def generate_ai_content_with_retry(trend, request_budget):
+    """Retries transient Gemini server failures within the shared request budget."""
+    attempts = min(MAX_GEMINI_ATTEMPTS_PER_TREND, request_budget)
+    if attempts < 1:
+        return None, 0
+
+    for attempt in range(1, attempts + 1):
+        try:
+            return generate_ai_content(trend), attempt
+        except errors.ServerError as error:
+            if error.code not in RETRYABLE_GEMINI_STATUS_CODES:
+                raise
+            if attempt == attempts:
+                print(
+                    f"Gemini returned HTTP {error.code} after {attempt} attempt(s) "
+                    f"for {trend['title']}; skipping this topic until a later run."
+                )
+                return None, attempt
+            print(
+                f"Gemini returned HTTP {error.code} for {trend['title']}; "
+                f"retrying once in {GEMINI_RETRY_DELAY_SECONDS} seconds."
+            )
+            time.sleep(GEMINI_RETRY_DELAY_SECONDS)
+
+    return None, attempts
+
+
 def build_page_html(trend, ai_data):
     """Builds a responsive HTML page from validated AI content and escaped source data."""
     ai_data = validate_ai_content(ai_data)
@@ -1117,9 +1149,10 @@ def main():
         if not has_source_evidence(trend):
             print(f"Skipping trend with no linked source headlines: {trend['slug']}")
             continue
-        if ai_calls >= MAX_TREND_GENERATION_CALLS:
+        remaining_requests = MAX_TREND_GENERATION_CALLS - ai_calls
+        if remaining_requests <= 0:
             print(
-                f"Reached the {MAX_TREND_GENERATION_CALLS}-article generation limit; "
+                f"Reached the {MAX_TREND_GENERATION_CALLS}-request Gemini limit; "
                 f"skipping {trend['slug']}."
             )
             continue
@@ -1128,10 +1161,13 @@ def main():
             time.sleep(TREND_GENERATION_PAUSE_SECONDS)
 
         print(f"Processing trend: {trend['title']}")
-        ai_calls += 1
         trend["source_fingerprint"] = fingerprint
         trend["category"] = trend_category(trend["title"])
-        ai_data = generate_ai_content(trend)
+        ai_data, requests_used = generate_ai_content_with_retry(
+            trend,
+            remaining_requests,
+        )
+        ai_calls += requests_used
         
         if not ai_data:
             print(f"Skipped/Filtered out: {trend['title']}")

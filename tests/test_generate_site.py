@@ -2,6 +2,8 @@ import os
 import unittest
 from unittest.mock import patch
 
+from google.genai import errors
+
 os.environ.setdefault("GEMINI_API_KEY", "test-only-not-a-real-key")
 
 import generate_site
@@ -97,6 +99,72 @@ class GoogleTrendsFeedTests(unittest.TestCase):
         self.assertFalse(generate_site.has_source_evidence({
             "news": [{"title": "Headline", "url": "javascript:alert(1)"}],
         }))
+
+
+class GeminiRetryTests(unittest.TestCase):
+    def test_retries_server_timeout_once_within_budget(self):
+        timeout = errors.ServerError(
+            504,
+            {"error": {"message": "Deadline expired"}},
+        )
+        trend = {"title": "Sample topic"}
+
+        with (
+            patch.object(
+                generate_site,
+                "generate_ai_content",
+                side_effect=[timeout, {"status": "SUCCESS"}],
+            ) as generate,
+            patch.object(generate_site.time, "sleep") as sleep,
+        ):
+            result, requests_used = generate_site.generate_ai_content_with_retry(
+                trend,
+                request_budget=5,
+            )
+
+        self.assertEqual(result, {"status": "SUCCESS"})
+        self.assertEqual(requests_used, 2)
+        self.assertEqual(generate.call_count, 2)
+        sleep.assert_called_once_with(generate_site.GEMINI_RETRY_DELAY_SECONDS)
+
+    def test_exhausted_retry_budget_skips_topic(self):
+        timeout = errors.ServerError(
+            504,
+            {"error": {"message": "Deadline expired"}},
+        )
+
+        with (
+            patch.object(generate_site, "generate_ai_content", side_effect=timeout) as generate,
+            patch.object(generate_site.time, "sleep"),
+        ):
+            result, requests_used = generate_site.generate_ai_content_with_retry(
+                {"title": "Sample topic"},
+                request_budget=2,
+            )
+
+        self.assertIsNone(result)
+        self.assertEqual(requests_used, 2)
+        self.assertEqual(generate.call_count, 2)
+
+    def test_request_budget_limits_retry_attempts(self):
+        timeout = errors.ServerError(
+            504,
+            {"error": {"message": "Deadline expired"}},
+        )
+
+        with patch.object(
+            generate_site,
+            "generate_ai_content",
+            side_effect=timeout,
+        ) as generate:
+            result, requests_used = generate_site.generate_ai_content_with_retry(
+                {"title": "Sample topic"},
+                request_budget=1,
+            )
+
+        self.assertIsNone(result)
+        self.assertEqual(requests_used, 1)
+        generate.assert_called_once()
 
 
 if __name__ == "__main__":

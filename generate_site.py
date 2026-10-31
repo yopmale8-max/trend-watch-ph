@@ -57,6 +57,34 @@ TREND_CATEGORY_KEYWORDS = (
     ("Technology", ("macbook", "iphone", "ipad", "apple", "huawei", "samsung", "android", "tech")),
     ("Food & Travel", ("michelin", "restaurant", "food", "chef", "travel")),
 )
+EDITORIAL_GUIDANCE = {
+    "Tennis": (
+        "For tennis topics, focus on a concrete reader need such as current results, "
+        "tournament status, or how to find official match information. Do not present "
+        "old schedules, injury claims, or Philippine broadcast availability as current "
+        "unless the supplied sources support those details."
+    ),
+    "Basketball": (
+        "For basketball topics, focus on a concrete reader need such as fixtures, "
+        "results, tickets, or official coverage. Give a date, venue, or time only when "
+        "supported by the supplied sources; otherwise tell readers where to verify it."
+    ),
+    "Volleyball": (
+        "For volleyball topics, focus on a concrete reader need such as fixtures, "
+        "results, tickets, or viewing options. Give current dates or access details only "
+        "when supplied sources support them; otherwise point readers to official listings."
+    ),
+    "Technology": (
+        "For technology topics, clearly separate officially announced products and "
+        "features from rumors or forecasts. Include local availability or pricing only "
+        "when the supplied sources support it."
+    ),
+    "Food & Travel": (
+        "For food and travel topics, focus on verifiable listings, official announcements, "
+        "or practical planning information. Do not imply a guide, selection, opening, or "
+        "local recommendation is confirmed unless the supplied sources support it."
+    ),
+}
 
 # Negative keywords to protect domain reputation and ad policy compliance
 BLOCKED_KEYWORDS = [
@@ -397,6 +425,16 @@ def has_source_evidence(trend):
     )
 
 
+def editorial_guidance_for_trend(trend):
+    category = trend.get("category") or trend_category(trend["title"])
+    return EDITORIAL_GUIDANCE.get(
+        category,
+        "Identify one concrete question a reader could act on, such as how to check "
+        "an official announcement, release, result, or service. If the supplied sources "
+        "do not support a useful answer, do not pad the article; skip it.",
+    )
+
+
 def get_related_trends(current_slug, limit=4):
     archive_path = Path(NICHE_CONFIG["output_dir"]) / "trends_archive.json"
     if not archive_path.is_file():
@@ -691,6 +729,7 @@ def fetch_google_trends():
 
 def generate_ai_content(trend):
     """Drafts a concise explainer from Google Trends RSS headline evidence."""
+    editorial_guidance = editorial_guidance_for_trend(trend)
     trend_data = json.dumps({
         "title": trend["title"],
         "feed_published_at": trend.get("published_at", ""),
@@ -718,8 +757,13 @@ def generate_ai_content(trend):
     - Do not invent or assume events, causes, dates, schedules, scores, statistics, quotes, biographies, local audience behavior, or Philippine-specific facts.
     - Attribute claims to the headline/publisher in the supplied data; headlines are leads, not proof of the underlying story.
     - Never claim to know why a topic is trending unless the supplied reporting explicitly establishes that relationship.
-    - Explain the limits of the feed and identify what a reader should verify with the linked publisher or an appropriate primary source.
-    - If the supplied headlines do not support a useful, non-repetitive article, output exactly: SKIP
+    - Include Philippine context only when supported by the supplied evidence; otherwise say briefly that no specific local detail is established and avoid filler.
+    - Treat the feed publication date as the feed date, not the date of an event. Mention dates only when a supplied headline or snippet states them.
+    - Explain the feed's limits briefly, then answer a practical reader question with source-grounded information and a specific next step.
+    - Make every takeaway actionable. Each section must add distinct, useful information rather than restating the trend, generic advice, or another section.
+    - Name the supplied publisher when attributing a headline, and direct readers to an appropriate official source for time-sensitive details. Do not invent a source or claim you opened a link.
+    - Topic-specific editorial direction: {editorial_guidance}
+    - If the headlines are too vague, unsupported, or repetitive to answer a useful reader question, output exactly: SKIP
     - Keep takeaways, FAQs, and the meta description grounded in the supplied evidence.
 
     Output requirements:
@@ -734,6 +778,7 @@ def generate_ai_content(trend):
     - Include at least three detailed, relevant FAQ cards, each with one h3 question and one p answer, inside the faq-list.
     - Make every section add distinct information. Do not copy takeaway sentences into the body or repeat the same answer across FAQs.
     - Use direct, natural language; avoid search-engine filler, generic trend explanations, unsupported urgency, and fabricated local relevance.
+    - Do not describe this automatically generated article as reviewed or fact-checked by a person.
     - Do not invent a named reporter or imply human fact-checking.
     - Ensure the JSON is valid, including escaping any quotation marks inside string values.
     """

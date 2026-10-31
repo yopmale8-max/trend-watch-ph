@@ -107,6 +107,45 @@ class GoogleTrendsFeedTests(unittest.TestCase):
 
 
 class GeminiRetryTests(unittest.TestCase):
+    def test_editorial_guidance_is_topic_specific_and_has_a_general_fallback(self):
+        basketball_guidance = generate_site.editorial_guidance_for_trend({
+            "title": "PBA schedule",
+            "category": "Basketball",
+        })
+        general_guidance = generate_site.editorial_guidance_for_trend({
+            "title": "A topic with no mapped category",
+            "category": "Other",
+        })
+
+        self.assertIn("fixtures, results, tickets", basketball_guidance)
+        self.assertIn("one concrete question", general_guidance)
+
+    def test_generation_prompt_requires_reader_value_and_topic_guidance(self):
+        trend = {
+            "title": "PBA schedule",
+            "category": "Basketball",
+            "news": [{
+                "title": "League fixture announcement",
+                "source": "Example Publisher",
+                "url": "https://example.com/fixture",
+                "snippet": "The league shared an update.",
+            }],
+        }
+        response = type("Response", (), {"text": "SKIP"})()
+
+        with patch.object(
+            generate_site.client.models,
+            "generate_content",
+            return_value=response,
+        ) as generate:
+            self.assertIsNone(generate_site.generate_ai_content(trend))
+
+        prompt = generate.call_args.kwargs["contents"]
+        self.assertIn("answer a practical reader question", prompt)
+        self.assertIn("Topic-specific editorial direction:", prompt)
+        self.assertIn("fixtures, results, tickets, or official coverage", prompt)
+        self.assertIn("Do not describe this automatically generated article as reviewed", prompt)
+
     def test_scheduled_run_respects_generation_request_cap(self):
         trends = [
             {"title": f"Topic {index}", "slug": f"topic-{index}", "news": []}

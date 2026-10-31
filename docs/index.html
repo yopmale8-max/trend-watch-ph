@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrendWatch Philippines - Real-Time Trend Breakdowns</title>
-    <meta name="description" content="Explore live real-time trend breakdowns, explanations, and search insights updated automatically around the clock.">
+    <title>Search Trends in the Philippines, Explained | TrendWatch Philippines</title>
+    <meta name="description" content="Explore topics appearing in Google Trends for the Philippines, with linked source coverage and clear notes about what the feed can and cannot tell us.">
     <link rel="canonical" href="https://trendwatchph.netlify.app/">
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --accent: #38bdf8; --muted: #94a3b8; }
@@ -20,57 +20,60 @@
         .trend-card a:hover { color: var(--accent); }
         .card-description { display: block; color: var(--muted); font-size: 0.9rem; margin-top: 0.5rem; }
         .card-updated { display: block; color: var(--muted); font-size: 0.8rem; margin-top: 0.25rem; }
-        .badge { background: #0284c7; color: white; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+        .card-category { color: var(--accent); display: block; font-size: 0.78rem; font-weight: 700; margin-bottom: 0.35rem; }
+        .archive-note { color: var(--muted); font-size: 0.9rem; }
         .ad-slot:empty { display: none; }
         footer { text-align: center; color: var(--muted); padding: 3rem 0; border-top: 1px solid #334155; margin-top: 4rem; }
+        footer nav a { color: var(--accent); }
     </style>
     <script type="module" id="cloudflare-web-analytics" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"fc522491c2a8443782bb9676eae89499"}'></script>
 </head>
 <body>
     <header>
         <h1>TrendWatch Philippines</h1>
-        <p class="subtitle">Consumer safety recalls, trending public news, tech updates, and viral alerts in the Philippines and globally.</p>
+        <p class="subtitle">Search trends, explained with links to available source coverage.</p>
     </header>
 
     <div class="container">
         <div class="ad-slot" data-ad-slot="homepage-leaderboard"></div>
-        <h2>Recent Trend Breakdowns</h2>
+        <h2>Trending Topics in the Philippines</h2>
+        <p class="archive-note">Topics come from the Google Trends Philippines RSS feed. Cards are ordered by article generation date, not search volume.</p>
         <div class="trend-grid">
             <!-- TREND_CARDS_START -->
 
             <div class="trend-card">
-                <span class="badge">🔥 2000+</span>
-                <a href="elena-rybakina.html">Elena Rybakina</a>
-                <span class="card-description">Tennis star Elena Rybakina trends in the Philippines as fans closely track her latest high-stakes matches and dominant runs on the WTA Tour.</span>
-                <span class="card-updated">Updated Oct 29, 2026</span>
+                <span class="card-category">Tennis · Philippines</span>
+                <a href="elena-rybakina.html">Elena Rybakina: Career and Official Updates</a>
+                <span class="card-description">A concise career snapshot with links to the WTA player profile and current official results.</span>
+                <span class="card-updated">Generated Oct 29, 2026</span>
             </div>
 
             <div class="trend-card">
-                <span class="badge">🔥 1000+</span>
+                <span class="card-category">Basketball · Philippines</span>
                 <a href="pba-schedule.html">PBA Schedule</a>
-                <span class="card-description">Stay updated with the latest PBA schedule, game times, and matchups as fans across the Philippines follow the exciting basketball conference action.</span>
-                <span class="card-updated">Updated Oct 29, 2026</span>
+                <span class="card-description">Find the PBA&#x27;s current schedule through official league channels; dates and tip-off times can change.</span>
+                <span class="card-updated">Generated Oct 29, 2026</span>
             </div>
 
             <div class="trend-card">
-                <span class="badge">🔥 5000+</span>
+                <span class="card-category">Technology · Philippines</span>
                 <a href="new-macbook-pro-m6.html">New MacBook Pro M6</a>
-                <span class="card-description">Wondering why the MacBook Pro M6 is trending? Discover the latest Apple Silicon roadmap leaks and release rumors sparking buzz in the Philippines.</span>
-                <span class="card-updated">Updated Oct 29, 2026</span>
+                <span class="card-description">Separates confirmed Apple product information from speculation about future MacBook Pro models.</span>
+                <span class="card-updated">Generated Oct 29, 2026</span>
             </div>
 
             <div class="trend-card">
-                <span class="badge">🔥 2000+</span>
+                <span class="card-category">Volleyball · Philippines</span>
                 <a href="pvl.html">PVL</a>
-                <span class="card-description">Discover why the Premier Volleyball League (PVL) is trending in the Philippines, covering current conference highlights, match schedules, and standings.</span>
-                <span class="card-updated">Updated Oct 29, 2026</span>
+                <span class="card-description">A guide to checking current Premier Volleyball League schedules and results through official channels.</span>
+                <span class="card-updated">Generated Oct 29, 2026</span>
             </div>
 
             <div class="trend-card">
-                <span class="badge">🔥 200+</span>
-                <a href="michelin-guide-philippines-2027.html">Michelin Guide Philippines 2027</a>
-                <span class="card-description">Learn why Michelin Guide Philippines 2027 is trending as culinary leaders and tourism officials push for the prestigious guide&#x27;s official arrival.</span>
-                <span class="card-updated">Updated Oct 29, 2026</span>
+                <span class="card-category">Food &amp; Travel · Philippines</span>
+                <a href="michelin-guide-philippines-2027.html">Michelin Guide Philippines</a>
+                <span class="card-description">Use the official Michelin Guide directory for current Philippines restaurant selections and announcements.</span>
+                <span class="card-updated">Generated Oct 29, 2026</span>
             </div>
         <!-- TREND_CARDS_END -->
         </div>
@@ -78,7 +81,7 @@
     </div>
 
     <footer>
-        <p>&copy; 2026 TrendWatch Philippines. All rights reserved. Real-Time Search Insights &amp; News Breakdowns.</p>
+        <p>&copy; 2026 TrendWatch Philippines. All rights reserved. Search trends, explained.</p>
         <nav aria-label="Site information">
             <a href="./index.html">Home</a> ·
             <a href="./about.html">About Us</a> ·

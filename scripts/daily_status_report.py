@@ -85,7 +85,12 @@ def build_report(repository, token, now=None):
         else:
             counts["other"] += 1
 
-    status = "ATTENTION" if counts["failure"] or report_errors or not runs else "Daily status"
+    if counts["failure"] or report_errors:
+        status = "ATTENTION"
+    elif runs:
+        status = "Daily status"
+    else:
+        status = "No runs"
     date_label = now_pht.strftime("%Y-%m-%d")
     subject = f"{status}: TrendWatch automation report for {date_label} PHT"
     lines = [

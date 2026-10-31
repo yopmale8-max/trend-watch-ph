@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://trendwatchph.netlify.app/sitemap.xml
+Sitemap: https://yopmale8-max.github.io/trend-watch-ph/sitemap.xml

@@ -173,6 +173,19 @@ class GeminiRetryTests(unittest.TestCase):
 
 
 class SiteOptimizationTests(unittest.TestCase):
+    def test_github_pages_project_url_is_valid_for_canonical_links(self):
+        original_site_url = generate_site.NICHE_CONFIG["site_url"]
+        generate_site.NICHE_CONFIG["site_url"] = (
+            "https://yopmale8-max.github.io/trend-watch-ph"
+        )
+        try:
+            self.assertEqual(
+                generate_site.get_site_url(),
+                "https://yopmale8-max.github.io/trend-watch-ph",
+            )
+        finally:
+            generate_site.NICHE_CONFIG["site_url"] = original_site_url
+
     def test_article_review_interval_uses_generated_date(self):
         now = datetime(2026, 11, 8, tzinfo=timezone.utc)
 

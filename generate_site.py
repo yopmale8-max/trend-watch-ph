@@ -27,7 +27,7 @@ NICHE_CONFIG = {
     "output_dir": "docs",
     "site_url": (
         os.environ.get("SITE_URL", "").strip().rstrip("/")
-        or "https://trendwatchph.netlify.app"
+        or "https://yopmale8-max.github.io/trend-watch-ph"
     ),
 }
 

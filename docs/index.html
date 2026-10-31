@@ -18,13 +18,16 @@
         .trend-card:hover { transform: translateY(-2px); border-color: var(--accent); }
         .trend-card a { color: var(--text); text-decoration: none; font-size: 1.25rem; font-weight: bold; display: block; margin-bottom: 0.5rem; }
         .trend-card a:hover { color: var(--accent); }
+        .trend-card a:focus-visible, footer nav a:focus-visible { outline: 3px solid #facc15; outline-offset: 3px; border-radius: 3px; }
         .card-description { display: block; color: var(--muted); font-size: 0.9rem; margin-top: 0.5rem; }
         .card-updated { display: block; color: var(--muted); font-size: 0.8rem; margin-top: 0.25rem; }
+        .card-review { display: block; color: #fde68a; font-size: 0.8rem; font-weight: 700; margin-top: 0.25rem; }
         .card-category { color: var(--accent); display: block; font-size: 0.78rem; font-weight: 700; margin-bottom: 0.35rem; }
         .archive-note { color: var(--muted); font-size: 0.9rem; }
         .ad-slot:empty { display: none; }
         footer { text-align: center; color: var(--muted); padding: 3rem 0; border-top: 1px solid #334155; margin-top: 4rem; }
         footer nav a { color: var(--accent); }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; } }
     </style>
     <script type="module" id="cloudflare-web-analytics" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"fc522491c2a8443782bb9676eae89499"}'></script>
 </head>
@@ -34,7 +37,7 @@
         <p class="subtitle">Search trends, explained with links to available source coverage.</p>
     </header>
 
-    <div class="container">
+    <main class="container">
         <div class="ad-slot" data-ad-slot="homepage-leaderboard"></div>
         <h2>Trending Topics in the Philippines</h2>
         <p class="archive-note">Topics come from the Google Trends Philippines RSS feed. Cards are ordered by article generation date, not search volume.</p>
@@ -78,7 +81,7 @@
         <!-- TREND_CARDS_END -->
         </div>
         <div class="ad-slot" data-ad-slot="homepage-multiplex"></div>
-    </div>
+    </main>
 
     <footer>
         <p>&copy; 2026 TrendWatch Philippines. All rights reserved. Search trends, explained.</p>

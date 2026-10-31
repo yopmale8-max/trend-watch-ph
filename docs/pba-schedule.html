@@ -37,6 +37,8 @@
         .related-card strong, .related-card > span:last-child { display: block; }
         .related-card > span:last-child { color: #94a3b8; font-size: 0.88rem; margin-top: 0.4rem; }
         .source-card:hover, .related-card:hover { border-color: #38bdf8; }
+        a:focus-visible { outline: 3px solid #facc15; outline-offset: 3px; border-radius: 3px; }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; } }
     </style>
     <script type="module" id="cloudflare-web-analytics" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"fc522491c2a8443782bb9676eae89499"}'></script>
 </head>
@@ -46,7 +48,7 @@
         <span style="font-size: 0.85rem; color: var(--muted);">Search trends, explained</span>
     </header>
 
-    <div class="container">
+    <main class="container">
         <article class="card">
             <span class="meta-badge">Basketball · Google Trends Philippines</span>
             <h1>PBA Schedule: Where to Check Current Fixtures</h1>
@@ -90,7 +92,7 @@
                 <a class="related-card" href="michelin-guide-philippines-2027.html"><span class="card-category">Food &amp; Travel</span><strong>Michelin Guide Philippines</strong><span>Visit the official guide for restaurant selections.</span></a>
             </div></section>
         </article>
-    </div>
+    </main>
 
     <footer>
         <p>&copy; 2026 TrendWatch Philippines. All rights reserved. Search trends, explained.</p>

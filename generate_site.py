@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from html import escape
 from html.parser import HTMLParser
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from google import genai
 from google.genai import errors
@@ -41,6 +41,7 @@ REQUIRED_CONTENT_HEADINGS = [
 ]
 MAX_HOMEPAGE_TREND_CARDS = 50
 MAX_TREND_GENERATION_CALLS = 5
+ARTICLE_REVIEW_AFTER_DAYS = 7
 MAX_GEMINI_ATTEMPTS_PER_TREND = 2
 GEMINI_RETRY_DELAY_SECONDS = 4
 RETRYABLE_GEMINI_STATUS_CODES = {500, 502, 503, 504}
@@ -308,6 +309,26 @@ def display_updated_at(value):
         return ""
     parsed = datetime.fromisoformat(normalized.replace("Z", "+00:00"))
     return f"Generated {parsed:%b %d, %Y}"
+
+
+def is_article_review_due(generated_at, now=None):
+    normalized = parse_updated_at(generated_at)
+    if not normalized:
+        return False
+    generated = datetime.fromisoformat(normalized.replace("Z", "+00:00"))
+    current_time = now or datetime.now(timezone.utc)
+    if current_time.tzinfo is None:
+        current_time = current_time.replace(tzinfo=timezone.utc)
+    return current_time.astimezone(timezone.utc) - generated >= timedelta(
+        days=ARTICLE_REVIEW_AFTER_DAYS
+    )
+
+
+def render_robots_txt(site_url):
+    lines = ["User-agent: *", "Allow: /"]
+    if site_url:
+        lines.extend(["", f"Sitemap: {site_url}/sitemap.xml"])
+    return "\n".join(lines) + "\n"
 
 
 def editorial_date(value):
@@ -859,6 +880,8 @@ def build_page_html(trend, ai_data):
         .ad-slot:not(:empty) {{ margin: 2rem 0; }}
         footer {{ text-align: center; color: var(--muted); padding: 3rem 0; font-size: 0.9rem; border-top: 1px solid #334155; margin-top: 4rem; }}
         footer nav a {{ color: var(--accent); }}
+        a:focus-visible {{ outline: 3px solid #facc15; outline-offset: 3px; border-radius: 3px; }}
+        @media (prefers-reduced-motion: reduce) {{ *, *::before, *::after {{ scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }} }}
     </style>
 </head>
 <body>
@@ -867,7 +890,7 @@ def build_page_html(trend, ai_data):
         <span style="font-size: 0.85rem; color: var(--muted);">Search trends, explained</span>
     </header>
 
-    <div class="container">
+    <main class="container">
         <article class="card">
             <span class="meta-badge">{escape(trend.get("category") or trend_category(trend["title"]))} · Google Trends Philippines</span>
             <h1>{escaped_headline}</h1>
@@ -883,7 +906,7 @@ def build_page_html(trend, ai_data):
             {sources_html}
             {more_trends_html}
         </article>
-    </div>
+    </main>
 
     <footer>
         <p>&copy; {datetime.now(timezone.utc).year} {escape(NICHE_CONFIG['site_name'])}. All rights reserved. Search trends, explained.</p>
@@ -1014,6 +1037,7 @@ def update_index_page(generated_trends):
                 <a href="{escape(card["slug"], quote=True)}.html">{escape(title_case(card["title"]))}</a>
                 <span class="card-description">{escape(card["description"])}</span>
                 {f'<span class="card-updated">{escape(display_updated_at(card["generated_at"]))}</span>' if card["generated_at"] else ""}
+                {f'<span class="card-review">Review recommended</span>' if is_article_review_due(card["generated_at"]) else ""}
             </div>"""
         for card in ordered_cards
     )
@@ -1076,7 +1100,6 @@ def generate_sitemap(site_url):
     """Builds a sitemap for the static pages and archived trend articles."""
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    lastmod = datetime.utcnow().strftime("%Y-%m-%d")
     output_dir = Path(NICHE_CONFIG["output_dir"])
     archive_path = output_dir / "trends_archive.json"
     if archive_path.is_file():
@@ -1116,7 +1139,6 @@ def generate_sitemap(site_url):
         )
         xml += '  <url>\n'
         xml += f'    <loc>{escape(page_url)}</loc>\n'
-        xml += f'    <lastmod>{lastmod}</lastmod>\n'
         xml += '  </url>\n'
         
     xml += '</urlset>'
@@ -1142,10 +1164,25 @@ def main():
                 existing_record.get("source_fingerprint")
                 if isinstance(existing_record, dict) else ""
             )
-            if not saved_fingerprint or saved_fingerprint == fingerprint:
+            if saved_fingerprint == fingerprint:
                 print(f"Skipping unchanged or legacy trend without an AI request: {trend['slug']}")
                 continue
-            print(f"Refreshing trend because its source headlines changed: {trend['slug']}")
+            if not saved_fingerprint:
+                if not (
+                    isinstance(existing_record, dict)
+                    and is_article_review_due(
+                        existing_record.get("generated_at")
+                        or existing_record.get("updated_at", "")
+                    )
+                ):
+                    print(
+                        f"Skipping legacy trend before its {ARTICLE_REVIEW_AFTER_DAYS}-day "
+                        f"review interval: {trend['slug']}"
+                    )
+                    continue
+                print(f"Reviewing legacy trend after its review interval: {trend['slug']}")
+            else:
+                print(f"Refreshing trend because its source headlines changed: {trend['slug']}")
         if not has_source_evidence(trend):
             print(f"Skipping trend with no linked source headlines: {trend['slug']}")
             continue
@@ -1193,6 +1230,10 @@ def main():
     else:
         print("SITE_URL is not configured; canonical URLs and sitemap were not generated.")
 
+    (output_dir / "robots.txt").write_text(
+        render_robots_txt(site_url),
+        encoding="utf-8",
+    )
     install_cloudflare_beacon()
 
 if __name__ == "__main__":

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://trendwatchph.netlify.app/sitemap.xml

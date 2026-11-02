@@ -1,0 +1,38 @@
+name: Source-by-source editorial review
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out site
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install review dependency
+        run: pip install google-genai==2.34.0
+
+      - name: Compare each article with each linked source
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PYTHONUNBUFFERED: '1'
+        run: python scripts/editorial_verifier.py
+
+      - name: Upload advisory report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trendwatch-editorial-review-${{ github.run_id }}
+          path: data/editorial_review_report.json
+          if-no-files-found: warn
+          retention-days: 7

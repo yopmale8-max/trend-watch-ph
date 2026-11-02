@@ -432,6 +432,55 @@ class ArticleCopyTests(unittest.TestCase):
 
 
 class GeminiRetryTests(unittest.TestCase):
+    def setUp(self):
+        self.publication_env = patch.dict(
+            os.environ,
+            {"ENABLE_AI_ARTICLE_PUBLISHING": "true"},
+        )
+        self.publication_env.start()
+
+    def tearDown(self):
+        self.publication_env.stop()
+
+    def test_main_does_not_publish_ai_articles_when_review_gate_is_disabled(self):
+        original_output_dir = generate_site.NICHE_CONFIG["output_dir"]
+        original_queue_path = generate_site.NICHE_CONFIG["retry_queue_path"]
+        trend = {
+            "title": "Sample topic",
+            "slug": "sample-topic",
+            "news": [],
+        }
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            generate_site.NICHE_CONFIG["output_dir"] = temp_dir
+            generate_site.NICHE_CONFIG["retry_queue_path"] = str(
+                Path(temp_dir) / "pending_trends.json"
+            )
+            try:
+                with (
+                    patch.dict(os.environ, {"ENABLE_AI_ARTICLE_PUBLISHING": "false"}),
+                    patch.object(generate_site, "get_site_url", return_value=""),
+                    patch.object(generate_site, "synchronize_canonical_urls"),
+                    patch.object(
+                        generate_site,
+                        "fetch_google_trends",
+                        return_value=[trend],
+                    ),
+                    patch.object(
+                        generate_site,
+                        "generate_ai_content_with_retry",
+                    ) as generate,
+                    patch.object(generate_site, "update_index_page"),
+                    patch.object(generate_site, "install_cloudflare_beacon"),
+                ):
+                    generate_site.main()
+            finally:
+                generate_site.NICHE_CONFIG["output_dir"] = original_output_dir
+                generate_site.NICHE_CONFIG["retry_queue_path"] = original_queue_path
+
+            self.assertFalse((Path(temp_dir) / "sample-topic.html").exists())
+            generate.assert_not_called()
+
     def test_editorial_guidance_is_topic_specific_and_has_a_general_fallback(self):
         basketball_guidance = generate_site.editorial_guidance_for_trend({
             "title": "PBA schedule",
@@ -1119,6 +1168,16 @@ class GeminiRetryTests(unittest.TestCase):
 
 
 class SiteOptimizationTests(unittest.TestCase):
+    def setUp(self):
+        self.publication_env = patch.dict(
+            os.environ,
+            {"ENABLE_AI_ARTICLE_PUBLISHING": "true"},
+        )
+        self.publication_env.start()
+
+    def tearDown(self):
+        self.publication_env.stop()
+
     def test_github_pages_project_url_is_valid_for_canonical_links(self):
         original_site_url = generate_site.NICHE_CONFIG["site_url"]
         generate_site.NICHE_CONFIG["site_url"] = (

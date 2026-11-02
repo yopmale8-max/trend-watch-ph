@@ -52,6 +52,7 @@ jobs:
           SITE_URL: https://yopmale8-max.github.io/trend-watch-ph
           GOOGLE_SITE_VERIFICATION: ${{ vars.GOOGLE_SITE_VERIFICATION }}
           CF_WEB_ANALYTICS_TOKEN: ${{ vars.CF_WEB_ANALYTICS_TOKEN || 'fc522491c2a8443782bb9676eae89499' }}
+          ENABLE_AI_ARTICLE_PUBLISHING: 'false'
           PYTHONUNBUFFERED: '1'
         run: |
           python generate_site.py

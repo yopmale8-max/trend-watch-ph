@@ -1843,6 +1843,12 @@ def generate_sitemap(site_url):
     xml += '</urlset>'
     return xml
 
+
+def ai_article_publication_enabled():
+    """Returns whether AI-generated articles may be published without manual review."""
+    return os.environ.get("ENABLE_AI_ARTICLE_PUBLISHING", "").strip().lower() == "true"
+
+
 def main():
     output_dir = Path(NICHE_CONFIG["output_dir"])
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -1850,13 +1856,22 @@ def main():
     synchronize_canonical_urls(site_url)
     trends = fetch_google_trends()
     now = datetime.now(timezone.utc)
+    publication_enabled = ai_article_publication_enabled()
 
     existing_records = get_existing_trend_records(output_dir)
     pending = {
         entry["trend"]["slug"]: entry
         for entry in load_retry_queue(now)
     }
-    for trend in trends:
+    if publication_enabled:
+        trends_to_process = trends
+    else:
+        trends_to_process = []
+        print(
+            "AI article publication is disabled pending a human editorial review "
+            "process; existing published pages will be preserved."
+        )
+    for trend in trends_to_process:
         trend["source_fingerprint"] = source_fingerprint(trend)
         trend["category"] = trend_category(trend["title"])
         existing_entry = pending.get(trend["slug"])
@@ -1885,7 +1900,7 @@ def main():
     due_entries = sorted(
         pending.values(),
         key=lambda entry: (entry["next_attempt_at"], entry["first_seen_at"]),
-    )
+    ) if publication_enabled else []
     for entry in due_entries:
         trend = entry["trend"]
         next_attempt = datetime.fromisoformat(

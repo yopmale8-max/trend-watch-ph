@@ -8,7 +8,7 @@
     <link rel="canonical" href="https://yopmale8-max.github.io/trend-watch-ph/pba-schedule.html">
     <meta name="robots" content="index, follow">
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --accent: #38bdf8; --muted: #94a3b8; --takeaway: #fbbf24; }
+        :root { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --accent: #38bdf8; --muted: #94a3b8; }
         body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; margin: 0; padding: 0; }
         header { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
         header a { color: var(--accent); text-decoration: none; font-weight: bold; }
@@ -16,17 +16,21 @@
         .card { background: var(--card); border: 1px solid #334155; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .meta-badge { display: inline-block; background: #0ea5e9; color: #082f49; border: 1px solid #7dd3fc; padding: 0.35rem 0.85rem; border-radius: 9999px; font-size: 0.9rem; font-weight: 750; margin-bottom: 1rem; box-shadow: 0 2px 12px rgba(14,165,233,0.18); }
         .metadata-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0.6rem; color: var(--muted); font-size: 0.9rem; margin: 0 0 1rem; }
-        .editorial-label { color: #fcd98a; border: 1px solid #7c5a21; background: #302713; border-radius: 999px; padding: 0.12rem 0.55rem; font-size: 0.8rem; }
         .editorial-notice { background: #211e17; border: 1px solid #55421f; border-left: 4px solid #d6a84f; border-radius: 8px; color: #e8d8b7; padding: 0.75rem 1rem; margin: 0 0 1.5rem; font-size: 0.9rem; }
         .editorial-notice strong { color: #ffdc8c; }
+        .editorial-notice a { color: #fcd98a; }
+        .article-actions { display: flex; align-items: center; gap: 0.75rem; margin: 0 0 1.25rem; }
+        .share-button { border: 1px solid #41627f; border-radius: 999px; background: #172338; color: #f8fafc; padding: 0.45rem 0.9rem; font: inherit; font-size: 0.88rem; cursor: pointer; }
+        .share-button:hover { border-color: #38bdf8; color: #38bdf8; }
+        .share-status { color: #94a3b8; font-size: 0.82rem; }
         h1 { font-size: 2rem; margin-top: 0; letter-spacing: -0.025em; }
-        h2 { font-size: 1.25rem; color: var(--accent); margin-top: 1.5rem; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; }
+        h2 { font-size: 1.25rem; color: var(--accent); margin-top: 1.75rem; margin-bottom: 0.65rem; }
         p, li { color: #cbd5e1; }
         .ad-slot:empty { display: none; }
         footer { text-align: center; color: var(--muted); padding: 3rem 0; font-size: 0.9rem; border-top: 1px solid #334155; margin-top: 4rem; }
         footer nav a { color: #38bdf8; }
 
-        .key-takeaways { background: #1b2b42; border: 1px solid #344967; border-left: 6px solid var(--takeaway); border-radius: 8px; margin: 1.5rem 0 2rem; padding: 1rem 1.25rem; box-shadow: inset 0 0 24px rgba(251,191,36,0.035); }
+        .key-takeaways { background: #1b2b42; border: 1px solid #344967; border-left: 6px solid var(--accent); border-radius: 8px; margin: 1.5rem 0 2rem; padding: 1rem 1.25rem; box-shadow: inset 0 0 24px rgba(56,189,248,0.045); }
         .key-takeaways h3 { margin: 0 0 0.5rem; color: #f8fafc; }
         .key-takeaways ul { margin: 0; padding-left: 1.25rem; }
         .faq-list { display: grid; gap: 1rem; }
@@ -61,27 +65,28 @@
         <article class="card">
             <span class="meta-badge">Basketball · Google Trends Philippines</span>
             <h1>Looking for the PBA Schedule? Where to Check Fixtures</h1>
-            <p class="metadata-bar"><span>TrendWatch PH</span><span aria-hidden="true">·</span><time class="relative-date" datetime="2026-10-29T12:01:11Z" title="2026-10-29 12:01 UTC">Generated Oct 29, 2026</time><span aria-hidden="true">·</span><span>2 min read</span><span class="editorial-label">Not independently fact-checked</span></p>
-            <aside class="editorial-notice" role="note"><strong>Editorial note:</strong> This explainer is based on the trend feed and linked source coverage; those sources have not been independently fact-checked for this article. Verify time-sensitive details with the official source.</aside>
+            <p class="metadata-bar"><span>TrendWatch PH</span><span aria-hidden="true">·</span><span>AI-assisted</span><span aria-hidden="true">·</span><time class="relative-date" datetime="2026-10-29T12:01:11Z" title="2026-10-29 12:01 UTC">Last updated Oct 29, 2026</time><span aria-hidden="true">·</span><span>2 min read</span></p>
+            <aside class="editorial-notice" role="note"><strong>Editorial note:</strong> This AI-assisted article draws on the linked source coverage; its reporting has not been independently verified here. Send corrections through <a href="contact.html">Contact Us</a>, and confirm important or time-sensitive details with the original publisher or an official source.</aside>
+            <div class="article-actions"><button class="share-button" type="button">Share article</button><span class="share-status" aria-live="polite"></span></div>
 
             <!-- Top AdSense Banner Slot -->
             <div class="ad-slot" data-ad-slot="article-header"></div>
 
             <div class="content">
-                <p>Need a PBA game time before making plans? This archived trend entry is not a live schedule. Check the league's official channels for fixtures, venues and any changes.</p>
+                <p>Need a PBA game time before making plans? Check the league’s official schedule for fixtures, venues and changes.</p>
                 <div class="key-takeaways"><h3>Quick Takeaways</h3><ul>
-                    <li>The Google Trends Philippines feed lists “PBA schedule”; it does not supply a verified fixture list or explain the search activity.</li>
+                    <li>The search term “PBA schedule” is not a fixture list and does not explain why people searched for it.</li>
                     <li>PBA game dates, venues and tip-off times are event-specific and may change.</li>
                     <li>Use the Philippine Basketball Association’s official site and ticket announcements for current details.</li>
                 </ul></div>
-                <h2>What the Trend Feed Shows</h2>
-                <p>“PBA schedule” is a search query, not a fixture list. The feed does not identify the conference, teams or date behind the searches, so this page does not present an old schedule as current.</p>
+                <h2>What We Know</h2>
+                <p>“PBA schedule” is a search term, not a fixture list. It does not identify a conference, teams or game date, so check the league’s current schedule rather than relying on an old listing.</p>
                 <h2>What Current Sources Report</h2>
                 <p>The Philippine Basketball Association (PBA) publishes league information on its official website. The saved trend entry has no dated fixture announcement, so no game time or result is presented as current.</p>
                 <p>Game-day patterns and broadcast line-ups can become outdated. Recheck the event listing for venue or schedule changes before travelling.</p>
                 <h2>Philippine Context</h2>
                 <p>The Philippines label tells us the feed's geographic scope, not whether people wanted tickets, scores, broadcasts or fixtures. Each answer needs a current source.</p>
-                <h2>What to Verify Next</h2>
+                <h2>What to Check Next</h2>
                 <p>Open the PBA’s official channels for the latest schedule, venue and ticket details. If looking for a live broadcast, check the league’s current announcement and the broadcaster’s own listing instead of relying on an old provider list.</p>
                 <h2>Frequently Asked Questions</h2>
                 <div class="faq-list">
@@ -132,10 +137,40 @@
                 const label = unit
                     ? relativeFormat.format(-Math.floor(seconds / unit[1]), unit[0])
                     : "just now";
-                timestamp.textContent = `Generated ${label}`;
+                timestamp.textContent = `Last updated ${label}`;
             };
             updateTime();
             window.setInterval(updateTime, 60000);
+
+            const shareButton = document.querySelector(".share-button");
+            const shareStatus = document.querySelector(".share-status");
+            shareButton?.addEventListener("click", async () => {
+                const shareData = {
+                    title: document.title,
+                    text: document.querySelector("h1")?.textContent || document.title,
+                    url: window.location.href
+                };
+                if (navigator.share) {
+                    try {
+                        await navigator.share(shareData);
+                    } catch (error) {
+                        if (error.name !== "AbortError") {
+                            shareStatus.textContent = "Unable to open the share menu. Copy the page link to share it.";
+                        }
+                    }
+                    return;
+                }
+                if (!navigator.clipboard) {
+                    shareStatus.textContent = "Sharing is unavailable in this browser. Copy the page link from the address bar.";
+                    return;
+                }
+                try {
+                    await navigator.clipboard.writeText(shareData.url);
+                    shareStatus.textContent = "Article link copied.";
+                } catch (error) {
+                    shareStatus.textContent = "Unable to copy the link. Copy it from the address bar instead.";
+                }
+            });
         })();
     </script>
 </body>

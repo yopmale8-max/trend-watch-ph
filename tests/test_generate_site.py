@@ -124,7 +124,7 @@ class ArticleCopyTests(unittest.TestCase):
                 "<li>Official league listings are the best place to check changes.</li>"
                 "<li>Confirm venue and time close to game day.</li>"
                 "</ul></div>"
-                "<h2>What the Trend Feed Shows</h2>"
+                "<h2>What We Know</h2>"
                 "<p>The feed shows that this query appeared in its Philippines results. "
                 "It does not identify a game, date, team, or reason for the search interest. "
                 "That distinction matters because a query is not itself a fixture listing.</p>"
@@ -137,7 +137,7 @@ class ArticleCopyTests(unittest.TestCase):
                 "<p>The Philippines label describes the feed's geographic scope. It cannot "
                 "tell us what an individual searched for or whether they plan to attend. "
                 "For a local game, confirm the details with the league before travelling.</p>"
-                "<h2>What to Verify Next</h2>"
+                "<h2>What to Check Next</h2>"
                 "<p>Open the PBA's official event information and check the date and venue. "
                 "If you need broadcast details, verify the specific game with the league "
                 "and broadcaster because coverage can vary by event.</p>"
@@ -160,12 +160,52 @@ class ArticleCopyTests(unittest.TestCase):
         article = self.valid_article()
         validated = generate_site.validate_ai_content(article)
 
-        self.assertEqual(validated["headline"], article["headline"])
+        self.assertEqual(
+            validated["headline"],
+            "Where to Check the Latest PBA Schedule",
+        )
         self.assertTrue(validated["html_content"].startswith("<p>Looking for"))
         with self.assertRaisesRegex(ValueError, "headline"):
             generate_site.validate_ai_content(
                 self.valid_article("A" * 91)
             )
+
+    def test_validation_allows_source_supported_background_and_timeline_sections(self):
+        article = self.valid_article()
+        article["html_content"] = article["html_content"].replace(
+            "<h2>Philippine Context</h2>",
+            "<h2>Background</h2><p>Background details from reporting.</p>"
+            "<h2>Timeline</h2><p>A dated development from reporting.</p>"
+            "<h2>Philippine Context</h2>",
+        )
+
+        validated = generate_site.validate_ai_content(article)
+
+        self.assertIn("<h2>Background</h2>", validated["html_content"])
+        self.assertIn("<h2>Timeline</h2>", validated["html_content"])
+
+    def test_validation_rejects_background_before_the_required_sections(self):
+        article = self.valid_article()
+        article["html_content"] = article["html_content"].replace(
+            "<h2>What We Know</h2>",
+            "<h2>Background</h2><p>Unsupported placement.</p>"
+            "<h2>What We Know</h2>",
+        )
+
+        with self.assertRaisesRegex(ValueError, "optional section"):
+            generate_site.validate_ai_content(article)
+
+    def test_headline_title_case_handles_colons_and_acronyms(self):
+        self.assertEqual(
+            generate_site.title_case(
+                "Bantag Ifugao operation: what's confirmed—and what isn't"
+            ),
+            "Bantag Ifugao Operation: What's Confirmed—and What Isn't",
+        )
+        self.assertEqual(
+            generate_site.title_case("pnp and doj updates"),
+            "PNP and DOJ Updates",
+        )
 
     def test_over_limit_model_content_is_classified_as_retryable_output(self):
         article = self.valid_article()
@@ -214,15 +254,37 @@ class ArticleCopyTests(unittest.TestCase):
                 article,
             )
 
-        self.assertIn("<h1>Where to check the latest PBA schedule</h1>", html)
+        self.assertIn("<h1>Where to Check the Latest PBA Schedule</h1>", html)
         self.assertIn(
-            "<title>Where to check the latest PBA schedule | TrendWatch Philippines</title>",
+            "<title>Where to Check the Latest PBA Schedule | TrendWatch Philippines</title>",
             html,
         )
         self.assertIn('class="relative-date" datetime="2026-11-02T00:00:00Z"', html)
         self.assertIn('class="editorial-notice" role="note"', html)
         self.assertIn('class="related-thumb" aria-hidden="true"', html)
+        self.assertEqual(html.count("<span>Technology</span>"), 1)
+        self.assertIn('class="share-button" type="button">Share article', html)
         self.assertIn("Intl.RelativeTimeFormat", html)
+        self.assertIn("Last updated ${label}", html)
+        self.assertNotIn("Generated ${label}", html)
+        self.assertIn("navigator.share", html)
+
+    def test_related_trend_teasers_must_offer_more_than_a_nonconfirmation(self):
+        self.assertFalse(
+            generate_site.is_useful_related_description(
+                "This trend does not confirm a MacBook Pro M6."
+            )
+        )
+        self.assertFalse(
+            generate_site.is_useful_related_description(
+                "This page cannot confirm why the topic is trending."
+            )
+        )
+        self.assertTrue(
+            generate_site.is_useful_related_description(
+                "Check Apple Newsroom for confirmed announcements."
+            )
+        )
 
     def test_homepage_archive_uses_the_generated_article_headline(self):
         original_output_dir = generate_site.NICHE_CONFIG["output_dir"]
@@ -293,9 +355,14 @@ class GeminiRetryTests(unittest.TestCase):
             "title": "A topic with no mapped category",
             "category": "Other",
         })
+        finance_guidance = generate_site.editorial_guidance_for_trend({
+            "title": "Crypto exchange security",
+            "category": "Finance",
+        })
 
         self.assertIn("fixtures, results, tickets", basketball_guidance)
         self.assertIn("one concrete question", general_guidance)
+        self.assertIn("avoid alarmist wording", finance_guidance)
 
     def test_generation_prompt_requires_reader_value_and_topic_guidance(self):
         trend = {
@@ -318,14 +385,18 @@ class GeminiRetryTests(unittest.TestCase):
             self.assertIsNone(generate_site.generate_ai_content(trend))
 
         prompt = generate.call_args.kwargs["contents"]
-        self.assertIn("answer a practical reader question", prompt)
+        self.assertIn("answer a practical question", prompt)
         self.assertIn("Topic-specific editorial direction:", prompt)
         self.assertIn("fixtures, results, tickets, or official coverage", prompt)
         self.assertIn("reader-first article", prompt)
         self.assertIn("reader's likely question", prompt)
         self.assertIn("accurate, reader-focused headline", prompt)
         self.assertIn("Do not force slang, Taglish, or local references", prompt)
-        self.assertIn("Do not describe this automatically generated article as reviewed", prompt)
+        self.assertIn("presume innocence", prompt)
+        self.assertIn("Add Background or Timeline sections only", prompt)
+        self.assertIn("Do not refer to", prompt)
+        self.assertIn("Vary accurate, specific headline structures", prompt)
+        self.assertIn("Do not describe this AI-assisted article as reviewed", prompt)
 
     def test_scheduled_run_respects_generation_request_cap(self):
         trends = [

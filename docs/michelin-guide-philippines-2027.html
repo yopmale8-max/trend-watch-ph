@@ -8,7 +8,7 @@
     <link rel="canonical" href="https://yopmale8-max.github.io/trend-watch-ph/michelin-guide-philippines-2027.html">
     <meta name="robots" content="index, follow">
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --accent: #38bdf8; --muted: #94a3b8; --takeaway: #fbbf24; }
+        :root { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --accent: #38bdf8; --muted: #94a3b8; }
         body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; margin: 0; padding: 0; }
         header { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
         header a { color: var(--accent); text-decoration: none; font-weight: bold; }
@@ -16,16 +16,20 @@
         .card { background: var(--card); border: 1px solid #334155; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .meta-badge { display: inline-block; background: #0ea5e9; color: #082f49; border: 1px solid #7dd3fc; padding: 0.35rem 0.85rem; border-radius: 9999px; font-size: 0.9rem; font-weight: 750; margin-bottom: 1rem; box-shadow: 0 2px 12px rgba(14,165,233,0.18); }
         .metadata-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0.6rem; color: var(--muted); font-size: 0.9rem; margin: 0 0 1rem; }
-        .editorial-label { color: #fcd98a; border: 1px solid #7c5a21; background: #302713; border-radius: 999px; padding: 0.12rem 0.55rem; font-size: 0.8rem; }
         .editorial-notice { background: #211e17; border: 1px solid #55421f; border-left: 4px solid #d6a84f; border-radius: 8px; color: #e8d8b7; padding: 0.75rem 1rem; margin: 0 0 1.5rem; font-size: 0.9rem; }
         .editorial-notice strong { color: #ffdc8c; }
+        .editorial-notice a { color: #fcd98a; }
+        .article-actions { display: flex; align-items: center; gap: 0.75rem; margin: 0 0 1.25rem; }
+        .share-button { border: 1px solid #41627f; border-radius: 999px; background: #172338; color: #f8fafc; padding: 0.45rem 0.9rem; font: inherit; font-size: 0.88rem; cursor: pointer; }
+        .share-button:hover { border-color: #38bdf8; color: #38bdf8; }
+        .share-status { color: #94a3b8; font-size: 0.82rem; }
         h1 { font-size: 2rem; margin-top: 0; letter-spacing: -0.025em; }
-        h2 { font-size: 1.25rem; color: var(--accent); margin-top: 1.5rem; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; }
+        h2 { font-size: 1.25rem; color: var(--accent); margin-top: 1.75rem; margin-bottom: 0.65rem; }
         p, li { color: #cbd5e1; }
         .ad-slot:empty { display: none; }
         footer { text-align: center; color: var(--muted); padding: 3rem 0; font-size: 0.9rem; border-top: 1px solid #334155; margin-top: 4rem; }
 
-        .key-takeaways { background: #1b2b42; border: 1px solid #344967; border-left: 6px solid var(--takeaway); border-radius: 8px; margin: 1.5rem 0 2rem; padding: 1rem 1.25rem; box-shadow: inset 0 0 24px rgba(251,191,36,0.035); }
+        .key-takeaways { background: #1b2b42; border: 1px solid #344967; border-left: 6px solid var(--accent); border-radius: 8px; margin: 1.5rem 0 2rem; padding: 1rem 1.25rem; box-shadow: inset 0 0 24px rgba(56,189,248,0.045); }
         .key-takeaways h3 { margin: 0 0 0.5rem; color: #f8fafc; }
         .key-takeaways ul { margin: 0; padding-left: 1.25rem; }
         .faq-list { display: grid; gap: 1rem; }
@@ -60,31 +64,32 @@
         <article class="card">
             <span class="meta-badge">Food &amp; Travel · Google Trends Philippines</span>
             <h1>Michelin Guide Philippines 2027: What's Confirmed?</h1>
-            <p class="metadata-bar"><span>TrendWatch PH</span><span aria-hidden="true">·</span><time class="relative-date" datetime="2026-10-29T11:24:52Z" title="2026-10-29 11:24 UTC">Generated Oct 29, 2026</time><span aria-hidden="true">·</span><span>2 min read</span><span class="editorial-label">Not independently fact-checked</span></p>
-            <aside class="editorial-notice" role="note"><strong>Editorial note:</strong> This explainer is based on the trend feed and linked source coverage; those sources have not been independently fact-checked for this article. Verify time-sensitive details with the official source.</aside>
+            <p class="metadata-bar"><span>TrendWatch PH</span><span aria-hidden="true">·</span><span>AI-assisted</span><span aria-hidden="true">·</span><time class="relative-date" datetime="2026-10-29T11:24:52Z" title="2026-10-29 11:24 UTC">Last updated Oct 29, 2026</time><span aria-hidden="true">·</span><span>2 min read</span></p>
+            <aside class="editorial-notice" role="note"><strong>Editorial note:</strong> This AI-assisted article draws on the linked source coverage; its reporting has not been independently verified here. Send corrections through <a href="contact.html">Contact Us</a>, and confirm important or time-sensitive details with the original publisher or an official source.</aside>
+            <div class="article-actions"><button class="share-button" type="button">Share article</button><span class="share-status" aria-live="polite"></span></div>
 
             <!-- Top AdSense Banner Slot -->
             <div class="ad-slot" data-ad-slot="article-header"></div>
 
             <div class="content">
-                <p>Does “Michelin Guide Philippines 2027” mean an edition is confirmed? The archived trend entry includes no dated Michelin announcement. Check the official guide and trace third-party reports back to their original source.</p>
+                <p>Does “Michelin Guide Philippines 2027” mean an edition is confirmed? Check Michelin’s official guide and look for a dated announcement before treating the year as official.</p>
                 <div class="key-takeaways"><h3>Quick Takeaways</h3><ul>
                     <li>The “Michelin Guide Philippines 2027” query is a trend signal, not proof of an announced guide or launch date.</li>
-                    <li>This archived trend entry does not include a verified Michelin announcement explaining the 2027 reference.</li>
+                    <li>The linked coverage does not provide a dated Michelin announcement confirming a 2027 edition.</li>
                     <li>Michelin’s official Philippines selection page is the place to check for listed restaurants and guide information.</li>
                 </ul></div>
-                <h2>What the Trend Feed Shows</h2>
-                <p>The archived topic includes “2027,” but Google Trends does not verify the query or explain the searches. A year in a phrase is not proof that Michelin announced an edition, city or publication date.</p>
+                <h2>What We Know</h2>
+                <p>A year in a search phrase is not proof that Michelin announced an edition, city or publication date. Look for an official statement before relying on a projected date.</p>
                 <h2>What Current Sources Report</h2>
-                <p>Michelin’s official Philippines selection page lists restaurants in the country. This page’s source record contains no dated Michelin statement confirming a 2027 edition, inspection, timetable or selection.</p>
+                <p>Michelin’s official Philippines selection page lists restaurants in the country. The linked coverage does not contain a dated Michelin statement confirming a 2027 edition, inspection, timetable or selection.</p>
                 <p>Attribute claims by tourism bodies, restaurants or news outlets to those organizations; do not present them as Michelin announcements.</p>
                 <h2>Philippine Context</h2>
                 <p>A trend query does not measure restaurant quality, visitor demand or a guide's economic effect. A restaurant or city mentioned in speculation is not a confirmed selection.</p>
-                <h2>What to Verify Next</h2>
+                <h2>What to Check Next</h2>
                 <p>Look for a dated announcement on Michelin’s site and review its Philippines selection. For third-party reports, check who made the claim, whether Michelin is quoted and when it was updated.</p>
                 <h2>Frequently Asked Questions</h2>
                 <div class="faq-list">
-                    <div class="faq-card"><h3>Does this trend confirm a 2027 Michelin Guide?</h3><p>No. A query in the trend feed does not establish that Michelin announced an edition or publication date.</p></div>
+                    <div class="faq-card"><h3>Does this search confirm a 2027 Michelin Guide?</h3><p>No. A search phrase does not establish that Michelin announced an edition or publication date.</p></div>
                     <div class="faq-card"><h3>Where can I see Michelin’s Philippines listings?</h3><p>Use Michelin’s official Philippines selection page linked below for the restaurant listings currently published there.</p></div>
                     <div class="faq-card"><h3>How can I verify a claim about a new edition?</h3><p>Look for a dated Michelin announcement. For reports from other organizations, identify and attribute the original source of the claim.</p></div>
                 </div>
@@ -131,10 +136,40 @@
                 const label = unit
                     ? relativeFormat.format(-Math.floor(seconds / unit[1]), unit[0])
                     : "just now";
-                timestamp.textContent = `Generated ${label}`;
+                timestamp.textContent = `Last updated ${label}`;
             };
             updateTime();
             window.setInterval(updateTime, 60000);
+
+            const shareButton = document.querySelector(".share-button");
+            const shareStatus = document.querySelector(".share-status");
+            shareButton?.addEventListener("click", async () => {
+                const shareData = {
+                    title: document.title,
+                    text: document.querySelector("h1")?.textContent || document.title,
+                    url: window.location.href
+                };
+                if (navigator.share) {
+                    try {
+                        await navigator.share(shareData);
+                    } catch (error) {
+                        if (error.name !== "AbortError") {
+                            shareStatus.textContent = "Unable to open the share menu. Copy the page link to share it.";
+                        }
+                    }
+                    return;
+                }
+                if (!navigator.clipboard) {
+                    shareStatus.textContent = "Sharing is unavailable in this browser. Copy the page link from the address bar.";
+                    return;
+                }
+                try {
+                    await navigator.clipboard.writeText(shareData.url);
+                    shareStatus.textContent = "Article link copied.";
+                } catch (error) {
+                    shareStatus.textContent = "Unable to copy the link. Copy it from the address bar instead.";
+                }
+            });
         })();
     </script>
 </body>

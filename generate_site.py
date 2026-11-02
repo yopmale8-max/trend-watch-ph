@@ -953,6 +953,10 @@ def fetch_google_trends():
         
     return valid_trends[:10] # Process top 10 trends per run
 
+class InvalidAIResponse(ValueError):
+    """Signals model output that does not satisfy the article response contract."""
+
+
 def generate_ai_content(trend, model=PRIMARY_GEMINI_MODEL):
     """Drafts a concise explainer from Google Trends RSS headline evidence."""
     editorial_guidance = editorial_guidance_for_trend(trend)
@@ -1033,11 +1037,18 @@ def generate_ai_content(trend, model=PRIMARY_GEMINI_MODEL):
     elif text_response.startswith("```"):
         text_response = text_response[3:-3].strip()
 
-    return validate_ai_content(json.loads(text_response))
+    try:
+        ai_data = json.loads(text_response)
+    except json.JSONDecodeError as error:
+        raise InvalidAIResponse("AI response is not valid JSON") from error
+    try:
+        return validate_ai_content(ai_data)
+    except ValueError as error:
+        raise InvalidAIResponse(str(error)) from error
 
 
 def generate_ai_content_with_retry(trend, request_budget):
-    """Retries transient errors, then switches models within the shared request budget."""
+    """Retries transient API and invalid-output errors within the shared request budget."""
     if request_budget < 1:
         return None, 0, False, None
 
@@ -1060,6 +1071,8 @@ def generate_ai_content_with_retry(trend, request_budget):
             retry_after = None
             try:
                 return generate_ai_content(trend, model=model), requests_used + 1, False, None
+            except InvalidAIResponse as error:
+                last_error_message = f"invalid generated content from {model}: {error}"
             except errors.ClientError as error:
                 if error.code == 429:
                     if is_daily_quota_error(error):
@@ -1123,7 +1136,7 @@ def generate_ai_content_with_retry(trend, request_budget):
 
     if last_error_message:
         print(
-            f"Gemini transient failures exhausted {requests_used} request(s) "
+            f"Gemini generation failures exhausted {requests_used} request(s) "
             f"for {trend['title']}; deferring it to a later run."
         )
         return None, requests_used, True, None
@@ -1188,9 +1201,12 @@ def build_page_html(trend, ai_data):
             '<div class="related-grid">'
             + "".join(
                 f'<a class="related-card" href="{escape(item["slug"], quote=True)}.html">'
+                f'<span class="related-thumb" aria-hidden="true">'
+                f'<span>{escape(item.get("category", "Trending topic"))}</span></span>'
+                f'<span class="related-copy">'
                 f'<span class="card-category">{escape(item.get("category", "Trending topic"))}</span>'
                 f'<strong>{escape(title_case(item["title"]))}</strong>'
-                f'<span>{escape(item.get("description", ""))}</span></a>'
+                f'<span>{escape(item.get("description", ""))}</span></span></a>'
                 for item in related_cards
             )
             + "</div></section>"
@@ -1206,18 +1222,21 @@ def build_page_html(trend, ai_data):
     <meta name="robots" content="index, follow">
     {canonical}
     <style>
-        :root {{ --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --accent: #38bdf8; --muted: #94a3b8; }}
+        :root {{ --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --accent: #38bdf8; --muted: #94a3b8; --takeaway: #fbbf24; }}
         body {{ font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; margin: 0; padding: 0; }}
         header {{ background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }}
         header a {{ color: var(--accent); text-decoration: none; font-weight: bold; }}
         .container {{ max-width: 800px; margin: 2rem auto; padding: 0 1rem; }}
         .card {{ background: var(--card); border: 1px solid #334155; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }}
-        .meta-badge {{ display: inline-block; background: #0284c7; color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }}
-        .metadata-bar {{ color: var(--muted); font-size: 0.9rem; margin: 0 0 2rem; }}
+        .meta-badge {{ display: inline-block; background: #0ea5e9; color: #082f49; border: 1px solid #7dd3fc; padding: 0.35rem 0.85rem; border-radius: 9999px; font-size: 0.9rem; font-weight: 750; margin-bottom: 1rem; box-shadow: 0 2px 12px rgba(14,165,233,0.18); }}
+        .metadata-bar {{ display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0.6rem; color: var(--muted); font-size: 0.9rem; margin: 0 0 1rem; }}
+        .editorial-label {{ color: #fcd98a; border: 1px solid #7c5a21; background: #302713; border-radius: 999px; padding: 0.12rem 0.55rem; font-size: 0.8rem; }}
+        .editorial-notice {{ background: #211e17; border: 1px solid #55421f; border-left: 4px solid #d6a84f; border-radius: 8px; color: #e8d8b7; padding: 0.75rem 1rem; margin: 0 0 1.5rem; font-size: 0.9rem; }}
+        .editorial-notice strong {{ color: #ffdc8c; }}
         h1 {{ font-size: 2rem; margin-top: 0; letter-spacing: -0.025em; }}
         h2 {{ font-size: 1.25rem; color: var(--accent); margin-top: 1.5rem; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; }}
         p, li {{ color: #cbd5e1; }}
-        .key-takeaways {{ background: #172338; border-left: 4px solid var(--accent); border-radius: 8px; margin: 1.5rem 0 2rem; padding: 1rem 1.25rem; }}
+        .key-takeaways {{ background: #1b2b42; border: 1px solid #344967; border-left: 6px solid var(--takeaway); border-radius: 8px; margin: 1.5rem 0 2rem; padding: 1rem 1.25rem; box-shadow: inset 0 0 24px rgba(251,191,36,0.035); }}
         .key-takeaways h3 {{ margin: 0 0 0.5rem; color: var(--text); }}
         .key-takeaways ul {{ margin: 0; padding-left: 1.25rem; }}
         .faq-list {{ display: grid; gap: 1rem; }}
@@ -1225,18 +1244,25 @@ def build_page_html(trend, ai_data):
         .faq-card h3 {{ color: var(--text); font-size: 1.05rem; margin: 0 0 0.5rem; }}
         .faq-card p {{ margin: 0; }}
         .source-grid, .related-grid {{ display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }}
-        .source-card, .related-card {{ display: block; background: var(--card); border: 1px solid #334155; border-radius: 8px; color: var(--text); padding: 1rem; text-decoration: none; }}
+        .source-card, .related-card {{ display: block; background: var(--card); border: 1px solid #334155; border-radius: 10px; color: var(--text); text-decoration: none; overflow: hidden; }}
+        .source-card {{ padding: 1rem; }}
         .source-card span {{ display: block; color: var(--muted); font-size: 0.85rem; margin-top: 0.4rem; }}
         .source-note {{ color: var(--muted); font-size: 0.9rem; }}
         .card-category {{ color: var(--accent); display: block; font-size: 0.78rem; font-weight: 700; margin-bottom: 0.35rem; }}
-        .related-card strong, .related-card > span:last-child {{ display: block; }}
-        .related-card > span:last-child {{ color: var(--muted); font-size: 0.88rem; margin-top: 0.4rem; }}
+        .related-thumb {{ display: flex; min-height: 6rem; align-items: flex-end; padding: 0.8rem 1rem; background: radial-gradient(ellipse at 80% 10%, rgba(56,189,248,0.36), transparent 45%), linear-gradient(135deg, #1d3552, #172338 70%); border-bottom: 1px solid #344967; }}
+        .related-thumb > span {{ color: #bfdbfe; font-size: 0.72rem; font-weight: 750; letter-spacing: 0.08em; text-transform: uppercase; }}
+        .related-copy {{ display: grid; padding: 0.9rem 1rem 1rem; }}
+        .related-copy strong {{ display: block; line-height: 1.35; }}
+        .related-copy > span:last-child {{ color: var(--muted); font-size: 0.88rem; margin-top: 0.4rem; }}
         .source-card:hover, .related-card:hover {{ border-color: var(--accent); }}
+        .related-card:hover {{ transform: translateY(-2px); }}
+        .related-card {{ transition: transform 160ms ease, border-color 160ms ease; }}
         .ad-slot:empty {{ display: none; }}
         .ad-slot:not(:empty) {{ margin: 2rem 0; }}
         footer {{ text-align: center; color: var(--muted); padding: 3rem 0; font-size: 0.9rem; border-top: 1px solid #334155; margin-top: 4rem; }}
         footer nav a {{ color: var(--accent); }}
         a:focus-visible {{ outline: 3px solid #facc15; outline-offset: 3px; border-radius: 3px; }}
+        @media (max-width: 600px) {{ .card {{ padding: 1.25rem; }} header {{ padding: 1rem; }} .metadata-bar {{ font-size: 0.85rem; }} }}
         @media (prefers-reduced-motion: reduce) {{ *, *::before, *::after {{ scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }} }}
     </style>
 </head>
@@ -1250,7 +1276,8 @@ def build_page_html(trend, ai_data):
         <article class="card">
             <span class="meta-badge">{escape(trend.get("category") or trend_category(trend["title"]))} · Google Trends Philippines</span>
             <h1>{escaped_headline}</h1>
-            <p class="metadata-bar">TrendWatch PH · Generated {editorial_date(generated_at)} · {read_minutes} min read · Not independently fact-checked</p>
+            <p class="metadata-bar"><span>TrendWatch PH</span><span aria-hidden="true">·</span><time class="relative-date" datetime="{escape(generated_at, quote=True)}" title="{escape(generated_at, quote=True)}">Generated {editorial_date(generated_at)}</time><span aria-hidden="true">·</span><span>{read_minutes} min read</span><span class="editorial-label">Not independently fact-checked</span></p>
+            <aside class="editorial-notice" role="note"><strong>Editorial note:</strong> This explainer is based on the trend feed and linked source coverage; those sources have not been independently fact-checked for this article. Verify time-sensitive details with the official source.</aside>
 
             <div class="ad-slot" data-ad-slot="article-header"></div>
 
@@ -1273,6 +1300,30 @@ def build_page_html(trend, ai_data):
             <a href="privacy-policy.html">Privacy Policy</a>
         </nav>
     </footer>
+    <script>
+        (() => {{
+            const timestamp = document.querySelector(".relative-date");
+            if (!timestamp) return;
+            const relativeFormat = new Intl.RelativeTimeFormat(undefined, {{ numeric: "auto" }});
+            const units = [
+                ["year", 31536000],
+                ["month", 2592000],
+                ["day", 86400],
+                ["hour", 3600],
+                ["minute", 60]
+            ];
+            const updateTime = () => {{
+                const seconds = Math.max(0, (Date.now() - Date.parse(timestamp.dateTime)) / 1000);
+                const unit = units.find(([, size]) => seconds >= size);
+                const label = unit
+                    ? relativeFormat.format(-Math.floor(seconds / unit[1]), unit[0])
+                    : "just now";
+                timestamp.textContent = `Generated ${{label}}`;
+            }};
+            updateTime();
+            window.setInterval(updateTime, 60000);
+        }})();
+    </script>
 </body>
 </html>
 """
@@ -1661,7 +1712,7 @@ def main():
                 trend,
                 now=now,
                 existing=entry,
-                error="Transient Gemini API or transport failure",
+                error="Gemini API failure or invalid generated content",
                 count_attempt=True,
                 retry_after=(
                     min(

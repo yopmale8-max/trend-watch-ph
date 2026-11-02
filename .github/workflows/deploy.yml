@@ -26,6 +26,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Initialize article publishing metrics
+        run: |
+          mkdir -p data
+          printf '{\n  "schema_version": 1,\n  "articles_created": 0,\n  "articles_updated": 0,\n  "trends_skipped": 0,\n  "trends_deferred": 0,\n  "retry_queue_remaining": 0\n}\n' > data/publish_status.json
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:

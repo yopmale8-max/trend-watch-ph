@@ -167,22 +167,62 @@ class ArticleCopyTests(unittest.TestCase):
                 self.valid_article("A" * 91)
             )
 
+    def test_over_limit_model_content_is_classified_as_retryable_output(self):
+        article = self.valid_article()
+        visible_text = generate_site.re.sub(r"<[^>]+>", " ", article["html_content"])
+        current_words = len(generate_site.re.findall(r"\b[\w'-]+\b", visible_text))
+        extra_words = 351 - current_words
+        self.assertGreater(extra_words, 0)
+        article["html_content"] = article["html_content"].replace(
+            "</p></div></div>",
+            f" {'extra ' * extra_words}</p></div></div>",
+        )
+        response = type("GeminiResponse", (), {"text": json.dumps(article)})()
+
+        with patch.object(
+            generate_site.client.models,
+            "generate_content",
+            return_value=response,
+        ):
+            with self.assertRaisesRegex(
+                generate_site.InvalidAIResponse,
+                "351 words; expected 200-350",
+            ):
+                generate_site.generate_ai_content(
+                    {"title": "PBA schedule", "news": []}
+                )
+
     def test_article_page_uses_the_generated_reader_focused_headline(self):
         article = self.valid_article()
-        html = generate_site.build_page_html(
-            {
-                "title": "PBA schedule",
-                "slug": "pba-schedule-test",
-                "news": [],
-            },
-            article,
-        )
+        with patch.object(
+            generate_site,
+            "get_related_trends",
+            return_value=[{
+                "slug": "related-topic",
+                "title": "Related topic",
+                "category": "Technology",
+                "description": "A concise related topic summary.",
+            }],
+        ):
+            html = generate_site.build_page_html(
+                {
+                    "title": "PBA schedule",
+                    "slug": "pba-schedule-test",
+                    "news": [],
+                    "generated_at": "2026-11-02T00:00:00Z",
+                },
+                article,
+            )
 
         self.assertIn("<h1>Where to check the latest PBA schedule</h1>", html)
         self.assertIn(
             "<title>Where to check the latest PBA schedule | TrendWatch Philippines</title>",
             html,
         )
+        self.assertIn('class="relative-date" datetime="2026-11-02T00:00:00Z"', html)
+        self.assertIn('class="editorial-notice" role="note"', html)
+        self.assertIn('class="related-thumb" aria-hidden="true"', html)
+        self.assertIn("Intl.RelativeTimeFormat", html)
 
     def test_homepage_archive_uses_the_generated_article_headline(self):
         original_output_dir = generate_site.NICHE_CONFIG["output_dir"]
@@ -669,6 +709,56 @@ class GeminiRetryTests(unittest.TestCase):
             result, requests_used, transient_failure, retry_after = generate_site.generate_ai_content_with_retry(
                 {"title": "Sample topic"},
                 request_budget=1,
+            )
+
+        self.assertIsNone(result)
+        self.assertEqual(requests_used, 1)
+        self.assertTrue(transient_failure)
+        self.assertIsNone(retry_after)
+        generate.assert_called_once()
+
+    def test_invalid_generated_content_retries_within_request_budget(self):
+        invalid_content = generate_site.InvalidAIResponse(
+            "AI HTML has 351 words; expected 200-350"
+        )
+
+        with (
+            patch.object(
+                generate_site,
+                "generate_ai_content",
+                side_effect=[invalid_content, {"status": "SUCCESS"}],
+            ) as generate,
+            patch.object(generate_site.time, "sleep") as sleep,
+        ):
+            result, requests_used, transient_failure, retry_after = (
+                generate_site.generate_ai_content_with_retry(
+                    {"title": "Sample topic"},
+                    request_budget=2,
+                )
+            )
+
+        self.assertEqual(result, {"status": "SUCCESS"})
+        self.assertEqual(requests_used, 2)
+        self.assertFalse(transient_failure)
+        self.assertIsNone(retry_after)
+        self.assertEqual(generate.call_count, 2)
+        sleep.assert_called_once()
+
+    def test_invalid_generated_content_exhaustion_is_deferred_not_fatal(self):
+        invalid_content = generate_site.InvalidAIResponse(
+            "AI HTML has 351 words; expected 200-350"
+        )
+
+        with patch.object(
+            generate_site,
+            "generate_ai_content",
+            side_effect=invalid_content,
+        ) as generate:
+            result, requests_used, transient_failure, retry_after = (
+                generate_site.generate_ai_content_with_retry(
+                    {"title": "Sample topic"},
+                    request_budget=1,
+                )
             )
 
         self.assertIsNone(result)

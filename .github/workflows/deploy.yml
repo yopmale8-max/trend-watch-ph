@@ -2,68 +2,140 @@ name: Automated Programmatic SEO Engine
 
 on:
   schedule:
-    - cron: '0 */4 * * *' # Runs every four hours automatically.
-  workflow_dispatch: # Allows an intentional manual run from GitHub Actions.
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: trend-watch-publish
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
+  prepare:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
-    permissions:
-      contents: write
-      pages: write
-      id-token: write
+    timeout-minutes: 15
+    outputs:
+      has_candidates: ${{ steps.candidates.outputs.has_candidates }}
+      source_sha: ${{ steps.revision.outputs.source_sha }}
     steps:
-      - name: Checkout Repository
+      - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Initialize article publishing metrics
-        run: |
-          mkdir -p data
-          printf '{\n  "schema_version": 1,\n  "articles_created": 0,\n  "articles_updated": 0,\n  "trends_skipped": 0,\n  "trends_deferred": 0,\n  "retry_queue_remaining": 0\n}\n' > data/publish_status.json
+      - name: Record source revision
+        id: revision
+        run: echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Install Dependencies
-        run: |
-          pip install google-genai==2.34.0 feedparser==6.0.14
+      - name: Install dependencies
+        run: pip install google-genai==2.34.0 feedparser==6.0.14
 
-      - name: Run Offline Regression Tests
+      - name: Initialize article publishing metrics
+        run: |
+          mkdir -p data
+          printf '{\n  "schema_version": 1,\n  "articles_created": 0,\n  "articles_updated": 0,\n  "trends_skipped": 0,\n  "trends_deferred": 0,\n  "retry_queue_remaining": 0,\n  "article_slugs": []\n}\n' > data/publish_status.json
+
+      - name: Run offline regression tests
         env:
           GEMINI_API_KEY: test-only-not-a-real-key
-        run: |
-          python -m unittest discover -s tests -v
+        run: python -m unittest discover -s tests -v
 
-      - name: Run Trend Generation Script
+      - name: Generate source-grounded candidate articles
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SITE_URL: https://yopmale8-max.github.io/trend-watch-ph
           GOOGLE_SITE_VERIFICATION: ${{ vars.GOOGLE_SITE_VERIFICATION }}
           CF_WEB_ANALYTICS_TOKEN: ${{ vars.CF_WEB_ANALYTICS_TOKEN || 'fc522491c2a8443782bb9676eae89499' }}
-          ENABLE_AI_ARTICLE_PUBLISHING: 'false'
+          ENABLE_AI_ARTICLE_PUBLISHING: 'true'
           PYTHONUNBUFFERED: '1'
-        run: |
-          python generate_site.py
+        run: python generate_site.py
 
-      - name: Commit and Push Generated Pages
+      - name: Compare candidates with linked sources
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PYTHONUNBUFFERED: '1'
+        run: python scripts/editorial_verifier.py --changed-only
+
+      - name: Set candidate output
+        id: candidates
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          has_candidates=$(python -c "import json; print('true' if json.load(open('data/publish_status.json', encoding='utf-8')).get('article_slugs') else 'false')")
+          echo "has_candidates=$has_candidates" >> "$GITHUB_OUTPUT"
+
+      - name: Explain approval setup when publishing is not enabled
+        if: vars.EDITORIAL_APPROVAL_CONFIGURED != 'true'
+        run: |
+          {
+            echo "## Publishing is fail-closed"
+            echo "Candidate pages and source-by-source AI review are available in this run's artifacts."
+            echo "To enable post-approval publishing, first configure a required reviewer for the \`editorial-approval\` GitHub Environment, then set the repository Actions variable \`EDITORIAL_APPROVAL_CONFIGURED=true\`."
+            echo "Do not set the variable until the environment has required reviewers."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload candidate pages and editorial report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trendwatch-candidates-${{ github.run_id }}
+          path: |
+            docs/
+            data/pending_trends.json
+            data/publish_status.json
+            data/editorial_review_report.json
+          if-no-files-found: warn
+          retention-days: 7
+
+  publish:
+    needs: prepare
+    if: needs.prepare.outputs.has_candidates == 'true' && vars.EDITORIAL_APPROVAL_CONFIGURED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: editorial-approval
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    steps:
+      - name: Check out current main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Download reviewed candidates
+        uses: actions/download-artifact@v4
+        with:
+          name: trendwatch-candidates-${{ github.run_id }}
+          path: staged
+
+      - name: Apply approved candidate pages
+        env:
+          PREPARE_SHA: ${{ needs.prepare.outputs.source_sha }}
+        run: |
+          checked_out_sha=$(git rev-parse HEAD)
+          if [ "$checked_out_sha" != "$PREPARE_SHA" ]; then
+            echo "::error::main changed while candidates awaited approval. Review a fresh workflow run instead."
+            exit 1
+          fi
+          cp -a staged/docs/. docs/
+          cp staged/data/pending_trends.json data/pending_trends.json
+
+      - name: Commit and push approved pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs/ data/pending_trends.json
-          git diff --quiet && git diff --cached --quiet || git commit -m "Auto-generated live trend updates [skip ci]"
-          git push
+          if ! git diff --cached --quiet; then
+            git commit \
+              -m "Publish editorially approved trend articles [skip ci]" \
+              -m "Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+            git push origin main
+          fi
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -74,7 +146,6 @@ jobs:
           path: docs
 
       - name: Deploy to GitHub Pages
-        id: deployment
         uses: actions/deploy-pages@v4
 
       - name: Upload article publishing metrics
@@ -82,6 +153,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: trendwatch-publish-status-${{ github.run_id }}
-          path: data/publish_status.json
+          path: staged/data/publish_status.json
           if-no-files-found: warn
           retention-days: 7

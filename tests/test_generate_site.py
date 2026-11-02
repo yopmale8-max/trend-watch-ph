@@ -124,6 +124,45 @@ class GoogleTrendsFeedTests(unittest.TestCase):
             ],
         }))
 
+    def test_source_article_fetch_requires_readable_text_from_two_publishers(self):
+        trend = {
+            "slug": "sample-topic",
+            "news": [
+                {
+                    "title": "First headline",
+                    "source": "First Publisher",
+                    "url": "https://first.example/story",
+                },
+                {
+                    "title": "Second headline",
+                    "source": "Second Publisher",
+                    "url": "https://second.example/story",
+                },
+            ],
+        }
+        source_text = "A source article contains verified details. " * 10
+        page = {
+            "status": "fetched",
+            "final_url": "https://first.example/story",
+            "title": "Source article",
+            "description": "Description",
+            "text": source_text,
+        }
+
+        with patch.object(
+            generate_site,
+            "fetch_source_page",
+            side_effect=[
+                page,
+                {**page, "final_url": "https://second.example/story"},
+            ],
+        ):
+            result = generate_site.fetch_source_article_evidence(trend)
+
+        self.assertTrue(result)
+        self.assertEqual(len(trend["source_articles"]), 2)
+        self.assertEqual(trend["source_articles"][0]["text"], source_text)
+
     def test_search_metadata_has_article_social_tags_and_structured_data(self):
         with patch.dict(os.environ, {"GOOGLE_SITE_VERIFICATION": "sample-token"}):
             markup = generate_site.render_search_metadata(
@@ -290,7 +329,7 @@ class ArticleCopyTests(unittest.TestCase):
             "PNP and DOJ Updates",
         )
 
-    def test_over_limit_model_content_is_classified_as_retryable_output(self):
+    def test_article_validation_does_not_enforce_an_arbitrary_word_count(self):
         article = self.valid_article()
         visible_text = generate_site.re.sub(r"<[^>]+>", " ", article["html_content"])
         current_words = len(generate_site.re.findall(r"\b[\w'-]+\b", visible_text))
@@ -300,20 +339,7 @@ class ArticleCopyTests(unittest.TestCase):
             "</p></div></div>",
             f" {'extra ' * extra_words}</p></div></div>",
         )
-        response = type("GeminiResponse", (), {"text": json.dumps(article)})()
-
-        with patch.object(
-            generate_site.client.models,
-            "generate_content",
-            return_value=response,
-        ):
-            with self.assertRaisesRegex(
-                generate_site.InvalidAIResponse,
-                "351 words; expected 200-350",
-            ):
-                generate_site.generate_ai_content(
-                    {"title": "PBA schedule", "news": []}
-                )
+        self.assertIn("extra", generate_site.validate_ai_content(article)["html_content"])
 
     def test_article_page_uses_the_generated_reader_focused_headline(self):
         article = self.valid_article()
@@ -428,6 +454,7 @@ class ArticleCopyTests(unittest.TestCase):
             "trends_skipped": 3,
             "trends_deferred": 4,
             "retry_queue_remaining": 5,
+            "article_slugs": [],
         })
 
 
@@ -509,6 +536,14 @@ class GeminiRetryTests(unittest.TestCase):
                 "url": "https://example.com/fixture",
                 "snippet": "The league shared an update.",
             }],
+            "source_articles": [{
+                "publisher": "Example Publisher",
+                "url": "https://example.com/fixture",
+                "headline": "League fixture announcement",
+                "page_title": "Official fixture details",
+                "description": "Fixture details from the league.",
+                "text": "The fixture is scheduled for a verified date.",
+            }],
         }
         response = type("Response", (), {"text": "SKIP"})()
 
@@ -533,6 +568,7 @@ class GeminiRetryTests(unittest.TestCase):
         self.assertIn("Vary accurate, specific headline structures", prompt)
         self.assertIn("does not prove independent corroboration", prompt)
         self.assertIn("Do not describe this AI-assisted article as reviewed", prompt)
+        self.assertIn("The fixture is scheduled for a verified date.", prompt)
 
     def test_scheduled_run_respects_generation_request_cap(self):
         trends = [
@@ -554,6 +590,7 @@ class GeminiRetryTests(unittest.TestCase):
                     patch.object(generate_site, "fetch_google_trends", return_value=trends),
                     patch.object(generate_site, "has_source_evidence", return_value=True),
                     patch.object(generate_site, "has_multiple_source_publishers", return_value=True),
+                    patch.object(generate_site, "fetch_source_article_evidence", return_value=True),
                     patch.object(
                         generate_site,
                         "generate_ai_content_with_retry",
@@ -577,10 +614,10 @@ class GeminiRetryTests(unittest.TestCase):
                 generate_site.NICHE_CONFIG["output_dir"] = original_output_dir
                 generate_site.NICHE_CONFIG["retry_queue_path"] = original_queue_path
 
-        self.assertEqual(generate.call_count, generate_site.MAX_TREND_GENERATION_CALLS)
+        self.assertEqual(generate.call_count, 1)
         self.assertEqual(
             [call.args[1] for call in generate.call_args_list],
-            [3, 2, 1],
+            [2],
         )
 
     def test_quota_exhaustion_stops_without_retrying(self):
@@ -751,6 +788,7 @@ class GeminiRetryTests(unittest.TestCase):
                     patch.object(generate_site, "fetch_google_trends", return_value=trends),
                     patch.object(generate_site, "has_source_evidence", return_value=True),
                     patch.object(generate_site, "has_multiple_source_publishers", return_value=True),
+                    patch.object(generate_site, "fetch_source_article_evidence", return_value=True),
                     patch.object(
                         generate_site,
                         "generate_ai_content_with_retry",
@@ -928,7 +966,7 @@ class GeminiRetryTests(unittest.TestCase):
 
     def test_invalid_generated_content_retries_within_request_budget(self):
         invalid_content = generate_site.InvalidAIResponse(
-            "AI HTML has 351 words; expected 200-350"
+            "AI HTML repeats an identical sentence"
         )
 
         with (
@@ -955,7 +993,7 @@ class GeminiRetryTests(unittest.TestCase):
 
     def test_invalid_generated_content_exhaustion_is_deferred_not_fatal(self):
         invalid_content = generate_site.InvalidAIResponse(
-            "AI HTML has 351 words; expected 200-350"
+            "AI HTML repeats an identical sentence"
         )
 
         with patch.object(
@@ -1119,6 +1157,7 @@ class GeminiRetryTests(unittest.TestCase):
                     patch.object(generate_site, "fetch_google_trends", return_value=[trend]),
                     patch.object(generate_site, "has_source_evidence", return_value=True),
                     patch.object(generate_site, "has_multiple_source_publishers", return_value=True),
+                    patch.object(generate_site, "fetch_source_article_evidence", return_value=True),
                     patch.object(
                         generate_site,
                         "generate_ai_content_with_retry",
@@ -1139,6 +1178,7 @@ class GeminiRetryTests(unittest.TestCase):
                     patch.object(generate_site, "synchronize_canonical_urls"),
                     patch.object(generate_site, "fetch_google_trends", return_value=[]),
                     patch.object(generate_site, "has_multiple_source_publishers", return_value=True),
+                    patch.object(generate_site, "fetch_source_article_evidence", return_value=True),
                     patch.object(generate_site, "generate_ai_content_with_retry",
                                  return_value=(
                                      {
@@ -1235,6 +1275,7 @@ class SiteOptimizationTests(unittest.TestCase):
                         patch.object(generate_site, "fetch_google_trends", return_value=[trend]),
                         patch.object(generate_site, "has_source_evidence", return_value=True),
                         patch.object(generate_site, "has_multiple_source_publishers", return_value=True),
+                        patch.object(generate_site, "fetch_source_article_evidence", return_value=True),
                         patch.object(
                             generate_site,
                             "generate_ai_content_with_retry",

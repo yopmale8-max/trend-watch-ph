@@ -1,4 +1,5 @@
 import json
+import socket
 import sys
 import unittest
 from pathlib import Path
@@ -67,6 +68,44 @@ class EditorialVerifierTests(unittest.TestCase):
             "https://user:password@news.example/story"
         ))
 
+    def test_source_fetch_rejects_hosts_resolving_to_private_addresses(self):
+        private_address = [
+            (
+                socket.AF_INET,
+                socket.SOCK_STREAM,
+                socket.IPPROTO_TCP,
+                "",
+                ("127.0.0.1", 443),
+            )
+        ]
+        with patch.object(
+            editorial_verifier.socket,
+            "getaddrinfo",
+            return_value=private_address,
+        ):
+            result = editorial_verifier.fetch_source_page(
+                "https://news.example/story"
+            )
+
+        self.assertEqual(result["status"], "unsafe_url")
+
+    def test_redirect_handler_rejects_unsafe_destinations(self):
+        handler = editorial_verifier.SafeRedirectHandler()
+        with patch.object(
+            editorial_verifier,
+            "is_public_source_url",
+            return_value=False,
+        ):
+            with self.assertRaises(editorial_verifier.UnsafeRedirectError):
+                handler.redirect_request(
+                    object(),
+                    object(),
+                    302,
+                    "Found",
+                    {},
+                    "https://localhost/private",
+                )
+
     def test_comparison_requires_exact_advisory_schema(self):
         response = type("Response", (), {
             "text": json.dumps({
@@ -118,6 +157,70 @@ class EditorialVerifierTests(unittest.TestCase):
                 source,
                 source_page,
             )
+
+    def test_review_batches_comparisons_and_keeps_each_source_separate(self):
+        article = {
+            "slug": "example",
+            "path": "example.html",
+            "headline": "Example headline",
+            "text": "Claim from the article.",
+            "sources": [
+                {"label": "First", "url": "https://first.example/story"},
+                {"label": "Second", "url": "https://second.example/story"},
+            ],
+        }
+        source_pages = [
+            {
+                "status": "fetched",
+                "title": f"Source {index}",
+                "description": "",
+                "text": f"Evidence from source {index}.",
+                "final_url": source["url"],
+            }
+            for index, source in enumerate(article["sources"], start=1)
+        ]
+        response = type("Response", (), {
+            "text": json.dumps({
+                "sources": [
+                    {
+                        "url": source["url"],
+                        "summary": f"Compared against source {index}.",
+                        "claims": [{
+                            "claim": "Claim from the article.",
+                            "status": "supports",
+                            "evidence": f"Source {index} evidence.",
+                        }],
+                    }
+                    for index, source in enumerate(article["sources"], start=1)
+                ],
+            }),
+        })()
+        client = type("Client", (), {
+            "models": type("Models", (), {
+                "generate_content": lambda self, **kwargs: response,
+            })(),
+        })()
+
+        with (
+            patch.object(
+                editorial_verifier,
+                "fetch_source_page",
+                side_effect=source_pages,
+            ),
+            patch.object(
+                client.models,
+                "generate_content",
+                wraps=client.models.generate_content,
+            ) as compare,
+        ):
+            result = editorial_verifier.review_article(client, article)
+
+        self.assertEqual(compare.call_count, 1)
+        self.assertEqual(len(result["sources"]), 2)
+        self.assertEqual(
+            [source["claims"][0]["evidence"] for source in result["sources"]],
+            ["Source 1 evidence.", "Source 2 evidence."],
+        )
 
     def test_unreachable_sources_are_listed_without_model_comparison(self):
         article = {

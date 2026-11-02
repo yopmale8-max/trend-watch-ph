@@ -1,74 +1,6 @@
 [
   {
     "trend": {
-      "title": "noah clowney",
-      "traffic": "100+",
-      "news": [
-        {
-          "title": "Ausar Thompson aggression, Ron Holland awakening push Pistons past Nets",
-          "url": "https://www.freep.com/story/sports/nba/pistons/2026/10/30/pistons-game-nba-scores-brooklyn-nets/92525275007/",
-          "source": "Detroit Free Press",
-          "snippet": ""
-        },
-        {
-          "title": "Ron Holland shines as Pistons cut down winless Nets in NBA Cup opener",
-          "url": "https://www.detroitnews.com/story/sports/nba/pistons/2026/10/30/ron-holland-shines-as-pistons-cut-down-winless-nets-in-nba-cup-opener/92523176007/",
-          "source": "The Detroit News",
-          "snippet": ""
-        },
-        {
-          "title": "Detroit Pistons vs. Brooklyn Nets Live Score and Stats - October 30, 2026 Gametracker",
-          "url": "https://www.cbssports.com/nba/gametracker/recap/NBA_20261030_DET@BKN/",
-          "source": "CBS Sports",
-          "snippet": ""
-        }
-      ],
-      "slug": "noah-clowney",
-      "category": "Trending topic",
-      "published_at": "2026-11-02T00:20:00Z",
-      "source_fingerprint": "b63b4e48d16f51c9cefcad1c43a758219a0f1f304d22ce774ffc2f741f3fc3d8"
-    },
-    "first_seen_at": "2026-11-02T01:34:44Z",
-    "next_attempt_at": "2026-11-02T01:51:46Z",
-    "attempts": 0,
-    "last_error": ""
-  },
-  {
-    "trend": {
-      "title": "all saints' day",
-      "traffic": "200+",
-      "news": [
-        {
-          "title": "LIVE UPDATES: Undas 2026 | Nov. 2",
-          "url": "https://www.inquirer.net/494516/live-updates-undas-2026-nov-2/",
-          "source": "Inquirer.net",
-          "snippet": ""
-        },
-        {
-          "title": "Manila North Cemetery logs over 1.3 million visitors on All Saints’ Day",
-          "url": "https://newsinfo.inquirer.net/2334576/manila-north-cemetery-logs-over-1-3-million-visitors-on-all-saints-day",
-          "source": "Inquirer.net",
-          "snippet": ""
-        },
-        {
-          "title": "Over 1.4 million visit Manila cemeteries",
-          "url": "https://www.philstar.com/nation/2026/11/02/2567188/over-14-million-visit-manila-cemeteries",
-          "source": "Philstar.com",
-          "snippet": ""
-        }
-      ],
-      "slug": "all-saints-day",
-      "category": "Trending topic",
-      "published_at": "2026-11-02T00:10:00Z",
-      "source_fingerprint": "d41c026c5e3726493020880b51e8244efa0813984760845d4ec4e021c7c51a66"
-    },
-    "first_seen_at": "2026-11-02T01:34:44Z",
-    "next_attempt_at": "2026-11-02T01:51:46Z",
-    "attempts": 0,
-    "last_error": ""
-  },
-  {
-    "trend": {
       "title": "lakers vs raptors",
       "traffic": "2000+",
       "news": [
@@ -97,7 +29,7 @@
       "source_fingerprint": "a07bc7fec94ce70e54fc949823b8ef03f8fba0b5f1139ff37dd01123ea28936d"
     },
     "first_seen_at": "2026-11-02T01:51:46Z",
-    "next_attempt_at": "2026-11-02T01:51:46Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
     "attempts": 0,
     "last_error": ""
   },
@@ -131,7 +63,7 @@
       "source_fingerprint": "eb2a60c65b61ae8874f12fcfce7cce182dc157791b7ccd98626a41e0e0ccc634"
     },
     "first_seen_at": "2026-11-02T01:51:46Z",
-    "next_attempt_at": "2026-11-02T01:51:46Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
     "attempts": 0,
     "last_error": ""
   },
@@ -165,7 +97,7 @@
       "source_fingerprint": "791a98bdc4f4c6c5203fa0646f5f0568178ababbf6d96c9bc0876d3fd7a51267"
     },
     "first_seen_at": "2026-11-02T01:51:46Z",
-    "next_attempt_at": "2026-11-02T01:51:46Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
     "attempts": 0,
     "last_error": ""
   },
@@ -199,7 +131,7 @@
       "source_fingerprint": "ce5c77a9cf05032a59674ebb85da95cb6bca1a3b3f228f21e9570f2d41c3349e"
     },
     "first_seen_at": "2026-11-02T01:51:46Z",
-    "next_attempt_at": "2026-11-02T01:51:46Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
     "attempts": 0,
     "last_error": ""
   },
@@ -233,7 +165,7 @@
       "source_fingerprint": "be66d693bad7786c435a86fae2c4eb2890855a523a5e749c0825e0f85b8bd213"
     },
     "first_seen_at": "2026-11-02T01:51:46Z",
-    "next_attempt_at": "2026-11-02T01:51:46Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
     "attempts": 0,
     "last_error": ""
   },
@@ -267,7 +199,7 @@
       "source_fingerprint": "cf19a83c4dce4cfd5fca3fb283bba917a27ca403487f999464814c07cf3bf772"
     },
     "first_seen_at": "2026-11-02T01:51:46Z",
-    "next_attempt_at": "2026-11-02T01:51:46Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
     "attempts": 0,
     "last_error": ""
   },
@@ -301,7 +233,687 @@
       "source_fingerprint": "9a6d27f4e9d6fbe640e362e854e6906ee4db76b2f146ed825dc177b757a98fff"
     },
     "first_seen_at": "2026-11-02T01:51:46Z",
-    "next_attempt_at": "2026-11-02T01:51:46Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "kris dunn",
+      "traffic": "200+",
+      "news": [
+        {
+          "title": "Sunday's fantasy basketball adds and bets to make in the NBA",
+          "url": "https://www.espn.com/fantasy/basketball/story/_/id/50347044/fantasy-basketball-tips-nba-betting-picks-today",
+          "source": "ESPN",
+          "snippet": ""
+        },
+        {
+          "title": "Fantasy Basketball Rankings (Points leagues): Early risers and fallers of the 2026-27 NBA season",
+          "url": "https://sports.yahoo.com/fantasy/article/fantasy-basketball-rankings-points-leagues-early-risers-and-fallers-of-the-2026-27-nba-season-180253060.html",
+          "source": "Yahoo Sports",
+          "snippet": ""
+        },
+        {
+          "title": "NBA Fantasy: Waiver wire adds ahead of week 3",
+          "url": "https://www.nba.com/news/nba-fantasy-waiver-wire-adds-ahead-of-week-3",
+          "source": "NBA.com",
+          "snippet": ""
+        }
+      ],
+      "slug": "kris-dunn",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T02:00:00Z",
+      "source_fingerprint": "4debc62b73b51bbc861a20ac8f1df16a106bb33620eaddeb235828a3ca278034"
+    },
+    "first_seen_at": "2026-11-02T02:23:26Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "georges niang",
+      "traffic": "200+",
+      "news": [
+        {
+          "title": "Warriors' Georges Niang: Will start Sunday",
+          "url": "https://www.cbssports.com/fantasy/basketball/news/warriors-georges-niang-will-start-sunday/",
+          "source": "CBS Sports",
+          "snippet": ""
+        },
+        {
+          "title": "Georges Niang News: Not starting Friday",
+          "url": "https://www.rotowire.com/basketball/headlines/georges-niang-news-not-starting-friday-536874",
+          "source": "RotoWire",
+          "snippet": ""
+        },
+        {
+          "title": "GSW starts Curry, Podz, Niang, Lendeborg, Green",
+          "url": "https://www.nbcsports.com/fantasy/basketball/player-news/2026-10-28/gsw-starts-curry-podz-niang-lendeborg-green",
+          "source": "NBC Sports",
+          "snippet": ""
+        }
+      ],
+      "slug": "georges-niang",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T02:00:00Z",
+      "source_fingerprint": "d86270222098721088bc561bab49e0f3900b2d5ac53946e8bd4f496575bcb9f2"
+    },
+    "first_seen_at": "2026-11-02T02:23:26Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "brandin podziemski",
+      "traffic": "100+",
+      "news": [
+        {
+          "title": "Ziaire Williams (foot) downgraded to out Sunday",
+          "url": "https://www.nbcsports.com/fantasy/basketball/player-news/2026-11-01/ziaire-williams-foot-downgraded-to-out-sunday",
+          "source": "NBC Sports",
+          "snippet": ""
+        },
+        {
+          "title": "Alpha Diallo (wrist) questionable Saturday",
+          "url": "https://www.fantasypros.com/nba/news/615594/alpha-diallo-wrist-questionable-saturday.php",
+          "source": "FantasyPros",
+          "snippet": ""
+        },
+        {
+          "title": "Nuggets' Alpha Diallo: Questionable to play Monday",
+          "url": "https://www.cbssports.com/fantasy/basketball/news/nuggets-alpha-diallo-questionable-to-play-monday/",
+          "source": "CBS Sports",
+          "snippet": ""
+        }
+      ],
+      "slug": "brandin-podziemski",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T02:00:00Z",
+      "source_fingerprint": "678ab9e60e827b581d54e4fc7e3cffcfb11148f8480296f491bf19857ccef092"
+    },
+    "first_seen_at": "2026-11-02T02:23:26Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "keaton wagler",
+      "traffic": "200+",
+      "news": [
+        {
+          "title": "Game Recap: Lakers 103, Clippers 87",
+          "url": "https://www.nba.com/watch/video/game-recap-lakers-103-clippers-87",
+          "source": "NBA.com",
+          "snippet": ""
+        },
+        {
+          "title": "Lakers rule out Luka Doncic, Ziaire Williams vs. Clippers",
+          "url": "https://www.espn.com/nba/story/_/id/50310776/lakers-rule-luka-doncic-ziaire-williams-vs-clippers",
+          "source": "ESPN",
+          "snippet": ""
+        },
+        {
+          "title": "‘This gimmick’ – LA Lakers fans confused as Collin Sexton’s ‘rabid’ defensive approach goes viral",
+          "url": "https://sports.yahoo.com/articles/gimmick-la-lakers-fans-confused-113000445.html",
+          "source": "Yahoo Sports",
+          "snippet": ""
+        }
+      ],
+      "slug": "keaton-wagler",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T02:00:00Z",
+      "source_fingerprint": "89442f0e7732f1a6c15dd3bd4ae6a69e825837f012c0b65fbefc2f60c2ba8d47"
+    },
+    "first_seen_at": "2026-11-02T02:23:26Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "charles bassey",
+      "traffic": "200+",
+      "news": [
+        {
+          "title": "Golden State Warriors' Charles Bassey reflects on 'long, adverse' NBA journey thanks to injuries",
+          "url": "https://www.espn.com/espn/story/_/id/50315423/golden-state-warriors-charles-bassey-reflects-long-adverse-nba-journey-thanks-injuries",
+          "source": "ESPN",
+          "snippet": ""
+        },
+        {
+          "title": "Warriors' De'Anthony Melton: Starting Sunday",
+          "url": "https://www.cbssports.com/fantasy/basketball/news/warriors-deanthony-melton-starting-sunday-537138/",
+          "source": "CBS Sports",
+          "snippet": ""
+        },
+        {
+          "title": "Charles Bassey (knee) probable Monday",
+          "url": "https://www.fantasypros.com/nba/news/615995/charles-bassey-knee-probable-monday.php",
+          "source": "FantasyPros",
+          "snippet": ""
+        }
+      ],
+      "slug": "charles-bassey",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T01:50:00Z",
+      "source_fingerprint": "6f4e33794274d2c89fca2ea7f00d550592226600711a3ad6bdc7ca4ccc0b067d"
+    },
+    "first_seen_at": "2026-11-02T02:23:26Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "rui hachimura",
+      "traffic": "200+",
+      "news": [
+        {
+          "title": "Clippers' Rui Hachimura: Puts up 12 points Friday",
+          "url": "https://www.cbssports.com/fantasy/basketball/news/clippers-rui-hachimura-puts-up-12-points-friday/",
+          "source": "CBS Sports",
+          "snippet": ""
+        },
+        {
+          "title": "Clippers may have overpaid for Rui Hachimura as shooting woes continue",
+          "url": "https://clipperholics.com/clippers-overpaid-rui-hachimura-shooting-woes-continue",
+          "source": "Clipperholics",
+          "snippet": ""
+        },
+        {
+          "title": "Rui Hachimura plays 26 minutes in return",
+          "url": "https://www.nbcsports.com/fantasy/basketball/player-news/2026-10-30/rui-hachimura-plays-26-minutes-in-return",
+          "source": "NBC Sports",
+          "snippet": ""
+        }
+      ],
+      "slug": "rui-hachimura",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T01:50:00Z",
+      "source_fingerprint": "707f5b8762b6c7fc9b52b70660a2c62ee7eea32e324d40f627950e317218ea81"
+    },
+    "first_seen_at": "2026-11-02T02:23:26Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "derrick jones jr.",
+      "traffic": "200+",
+      "news": [
+        {
+          "title": "Lakers Urged to Consider Blockbuster Trade for $103 Million NBA Champion",
+          "url": "https://sports.yahoo.com/articles/lakers-urged-consider-blockbuster-trade-211504698.html",
+          "source": "Yahoo Sports",
+          "snippet": ""
+        },
+        {
+          "title": "Lakers Trade for Popular Luka Doncic Target Has 1 Big Obstacle",
+          "url": "https://heavy.com/sports/nba/los-angeles-lakers/popular-luka-doncic-target-has-1-big-obstacle/",
+          "source": "Heavy.com",
+          "snippet": ""
+        },
+        {
+          "title": "Lakers predicted to trade for Clippers' $30M athletic 3-and-D wing, needed defensive menace",
+          "url": "https://www.sportingnews.com/us/nba/los-angeles-lakers/news/lakers-predicted-trade-clippers-30m-athletic-3-and-d-wing-needed-defensive-menace/5562ad2d9d24639f9adad094",
+          "source": "Sporting News",
+          "snippet": ""
+        }
+      ],
+      "slug": "derrick-jones-jr",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T01:50:00Z",
+      "source_fingerprint": "9aff6388c57eb66239b3a0cd29d4170492956275b70478bfb4db88a0b1fed421"
+    },
+    "first_seen_at": "2026-11-02T02:23:26Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "de'anthony melton",
+      "traffic": "200+",
+      "news": [
+        {
+          "title": "Game Preview: Warriors at Timberwolves - 10/28/26",
+          "url": "https://warriors.com/news/gameday-preview-20261028",
+          "source": "NBA.com",
+          "snippet": ""
+        },
+        {
+          "title": "Preview: Identify, develop, and trust",
+          "url": "https://dubnationhq.com/p/preview-identify-develop-and-trust",
+          "source": "Dub Nation HQ",
+          "snippet": ""
+        },
+        {
+          "title": "Jalen Smith Injury: Expected to play Monday",
+          "url": "https://www.rotowire.com/basketball/headlines/jalen-smith-injury-expected-to-play-monday-537102",
+          "source": "RotoWire",
+          "snippet": ""
+        }
+      ],
+      "slug": "de-anthony-melton",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T01:50:00Z",
+      "source_fingerprint": "0f38e5e6576b416e923c55f84b47da32a51488d46deaf76724b60aeb9f379e18"
+    },
+    "first_seen_at": "2026-11-02T02:23:26Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "june mar fajardo pba governors cup",
+      "traffic": "500+",
+      "news": [
+        {
+          "title": "'Walang imposible:' Fajardo still hopeful as San Miguel fights for survival in PBA Governors' Cup",
+          "url": "https://www.abs-cbn.com/sports/basketball/2026/11/1/fajardo-still-hopeful-as-san-miguel-fights-for-survival-in-pba-governors-cup-1706",
+          "source": "ABS-CBN",
+          "snippet": ""
+        },
+        {
+          "title": "Ginebra a win away from Final Four, routs SMB, 126-99",
+          "url": "https://www.pba.ph/news/ginebra-a-win-away-from-final-four-routs-smb-126-99",
+          "source": "PBA",
+          "snippet": ""
+        },
+        {
+          "title": "Cone surprised by Ginebra's dominant 2-0 quarters lead over SMB",
+          "url": "https://mb.com.ph/2026/10/31/cone-surprised-by-ginebras-dominant-2-0-quarters-lead-over-smb",
+          "source": "Manila Bulletin",
+          "snippet": ""
+        }
+      ],
+      "slug": "june-mar-fajardo-pba-governors-cup",
+      "category": "Basketball",
+      "published_at": "2026-11-02T01:50:00Z",
+      "source_fingerprint": "f97dd2eefb5709640fddbbb81899a55e704242964f7f562af98989969d2d1bde"
+    },
+    "first_seen_at": "2026-11-02T02:23:26Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "ml",
+      "traffic": "100+",
+      "news": [
+        {
+          "title": "𝗠𝗟 𝗗𝗲𝗽𝗮𝗿𝘁𝗺𝗲𝗻𝘁 𝗛𝗲𝗹𝗽𝘀 𝗙𝗮𝗺𝗶𝗹𝗶𝗲𝘀 𝗚𝗲𝘁 𝗶𝗻𝘁𝗼 𝘁𝗵𝗲 𝗛𝗮𝗹𝗹𝗼𝘄𝗲𝗲𝗻 𝗦𝗽𝗶𝗿𝗶𝘁",
+          "url": "https://www.tapinto.net/towns/linden/sections/education/articles/article-3425",
+          "source": "TAPinto",
+          "snippet": ""
+        },
+        {
+          "title": "InfoQ AI, ML and Data Engineering Trends Report - 2026",
+          "url": "https://www.infoq.com/articles/ai-ml-data-engineering-trends-2026/",
+          "source": "infoq.com",
+          "snippet": ""
+        },
+        {
+          "title": "The Top 7 Technology Trends For 2026",
+          "url": "https://bernardmarr.com/the-top-7-technology-trends-for-2026/",
+          "source": "Bernard Marr",
+          "snippet": ""
+        }
+      ],
+      "slug": "ml",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T01:50:00Z",
+      "source_fingerprint": "601c48c1e3ef219fe4ae57337e7394cfedc0139b2bfc7aa91bf5beab745cc5f1"
+    },
+    "first_seen_at": "2026-11-02T02:23:26Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "austin reaves",
+      "traffic": "200+",
+      "news": [
+        {
+          "title": "Austin Reaves took the blame for the struggles of the second unit vs. Warriors",
+          "url": "https://www.silverscreenandroll.com/lakers-news/128234/austin-reaves-lakers-warriors-reaction-turnovers",
+          "source": "Silver Screen and Roll",
+          "snippet": ""
+        },
+        {
+          "title": "Jake LaRavia: Lakers Need To Move On & Be Better After Rough Warriors Loss",
+          "url": "https://www.yardbarker.com/nba/articles/jake_laravia_lakers_need_to_move_on_be_better_after_rough_warriors_loss/s1_17074_44502009",
+          "source": "Yardbarker",
+          "snippet": ""
+        },
+        {
+          "title": "Austin Reaves fills stat sheet Friday against Warriors",
+          "url": "https://www.fantasypros.com/nba/news/617082/austin-reaves-fills-stat-sheet-friday-against-warriors.php",
+          "source": "FantasyPros",
+          "snippet": ""
+        }
+      ],
+      "slug": "austin-reaves",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T03:40:00Z",
+      "source_fingerprint": "d1e5908001fe46359362f044f974269c6ff43453e02c75f0a7293a1a466ba8fc"
+    },
+    "first_seen_at": "2026-11-02T03:59:02Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "luka dončić",
+      "traffic": "500+",
+      "news": [
+        {
+          "title": "Bam Adebayo sends early warning to Luka Doncic ahead of Lakers, Heat clash",
+          "url": "https://basketnews.com/news-258642-bam-adebayo-sends-early-warning-to-luka-doncic-ahead-of-lakers-heat-clash.html",
+          "source": "BasketNews.com",
+          "snippet": ""
+        },
+        {
+          "title": "Erik Spoelstra, Bam Adebayo Discuss How To Stop Luka Doncic When Facing Lakers",
+          "url": "https://sports.yahoo.com/articles/erik-spoelstra-bam-adebayo-discuss-023557318.html",
+          "source": "Yahoo Sports",
+          "snippet": ""
+        },
+        {
+          "title": "Luka Doncic gets an early message from Bam Adebayo ahead of Lakers-Heat showdown",
+          "url": "https://timesofindia.indiatimes.com/sports/nba/top-stories/luka-doncic-gets-an-early-message-from-bam-adebayo-ahead-of-lakers-heat-showdown/articleshow/135441608.cms",
+          "source": "The Times of India",
+          "snippet": ""
+        }
+      ],
+      "slug": "luka-don-i",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T03:30:00Z",
+      "source_fingerprint": "e824447dcd7e8d5521ab39cce2d8dd2663e28a855e62fd50463bef262eee4ccb"
+    },
+    "first_seen_at": "2026-11-02T03:59:02Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "jamal shead",
+      "traffic": "100+",
+      "news": [
+        {
+          "title": "Grading Every Timberwolves Player After Dominant Win Over Raptors",
+          "url": "https://www.si.com/nba/timberwolves/onsi/grading-every-timberwolves-player-after-dominant-win-over-raptors-01m5v4yfmh23",
+          "source": "Sports Illustrated",
+          "snippet": ""
+        },
+        {
+          "title": "NBA: Minnesota stays hot, tames Raptors to remain unbeaten",
+          "url": "https://www.dailyguardian.com.ph/blog/nba-minnesota-stays-hot-tames-raptors-to-remain-unbeaten",
+          "source": "Daily Guardian",
+          "snippet": ""
+        },
+        {
+          "title": "Raptors Timberwolves Basketball",
+          "url": "https://www.corsicanadailysun.com/sports/national_sports/raptors-timberwolves-basketball/image_7f7558c0-ef5b-503d-96fa-74b030f1feb3.html",
+          "source": "Corsicana Daily Sun",
+          "snippet": ""
+        }
+      ],
+      "slug": "jamal-shead",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T03:30:00Z",
+      "source_fingerprint": "9a74fcbc5891b16415d1004226ec075ff94311022374d3cee69b89672fd960de"
+    },
+    "first_seen_at": "2026-11-02T03:59:02Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "gta",
+      "traffic": "100+",
+      "news": [
+        {
+          "title": "OnlyFans star blasts girlfriends banning boyfriends from GTA VI : ‘At least he’s not cheating in real life’",
+          "url": "https://nypost.com/2026/11/01/lifestyle/is-gta-6-virtual-cheating-onlyfans-star-skylar-mae-weighs-in/",
+          "source": "New York Post",
+          "snippet": ""
+        },
+        {
+          "title": "Travis Scott And Nike Are Releasing Three GTA VI Air Force 1s",
+          "url": "https://sneakernews.com/2026/10/31/travis-scott-nike-air-force-1-low-gta-vi/",
+          "source": "Sneaker News",
+          "snippet": ""
+        },
+        {
+          "title": "Everything You Need to Know About the Rockstar x Travis Scott x Nike Collaboration",
+          "url": "https://www.sneakerfreaker.com/releases/rockstar-travis-scott-nike-GTA-6-air-force-1-price-buy-release-date",
+          "source": "Sneaker Freaker",
+          "snippet": ""
+        }
+      ],
+      "slug": "gta",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T03:30:00Z",
+      "source_fingerprint": "08a3353e39cf0a5ac3c0cae8f732e1409366a47ff8f137d625a3f645aa074f83"
+    },
+    "first_seen_at": "2026-11-02T03:59:02Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "gsw vs lac",
+      "traffic": "200+",
+      "news": [
+        {
+          "title": "LA Clippers at Golden State Warriors odds, picks and predictions",
+          "url": "https://sportsbookwire.usatoday.com/story/sports/nba/2026/11/01/clippers-at-warriors-odds-picks-and-predictions/92533162007/",
+          "source": "Sportsbook Wire",
+          "snippet": ""
+        },
+        {
+          "title": "Preview: Warriors meet new look Clippers in Chase Center",
+          "url": "https://www.goldenstateofmind.com/general/113128/preview-warriors-meet-new-look-clippers-in-chase-center",
+          "source": "Golden State Of Mind",
+          "snippet": ""
+        },
+        {
+          "title": "(LIVE.UPDATES) Golden State Warriors vs Los Angeles Clippers Live NBA Basketball Game On TV Channel",
+          "url": "https://www.prpeak.com/classifieds/announcements-and-events/community-events/2161739",
+          "source": "Powell River Peak",
+          "snippet": ""
+        }
+      ],
+      "slug": "gsw-vs-lac",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T03:20:00Z",
+      "source_fingerprint": "b0633cc1187de065687d2094bd5b36461255e3a8cebb76a86dc9956bd0ba13a4"
+    },
+    "first_seen_at": "2026-11-02T03:59:02Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "diesel fuel prices",
+      "traffic": "200+",
+      "news": [
+        {
+          "title": "Gasoline prices up by more than P3 in first week of November",
+          "url": "https://www.abs-cbn.com/news/business/2026/11/2/gasoline-prices-up-by-more-than-p3-in-first-week-of-november-0940",
+          "source": "ABS-CBN",
+          "snippet": ""
+        },
+        {
+          "title": "Mixed movements forecast anew for oil prices",
+          "url": "https://www.pna.gov.ph/article/mixed-movements-forecast-anew-for-oil-prices",
+          "source": "Philippine News Agency",
+          "snippet": ""
+        },
+        {
+          "title": "Gas prices seen higher next week; rollback for diesel",
+          "url": "https://www.philstar.com/headlines/2026/10/31/2566826/gas-prices-seen-higher-next-week-rollback-diesel",
+          "source": "Philstar.com",
+          "snippet": ""
+        }
+      ],
+      "slug": "diesel-fuel-prices",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T03:20:00Z",
+      "source_fingerprint": "ac4693efd10e5e23f3f424fb5b84e3fa9200ae3564172bafd3b6c617877a6b73"
+    },
+    "first_seen_at": "2026-11-02T03:59:02Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "cameron carr",
+      "traffic": "200+",
+      "news": [
+        {
+          "title": "Lakers Injury Report: Cameron Carr Available Vs Raptors",
+          "url": "https://lakersnation.com/lakers-injury-report-cameron-carr-available-vs-raptors/",
+          "source": "Lakers Nation",
+          "snippet": ""
+        },
+        {
+          "title": "Cameron Carr should be given some of Quentin Grimes' minutes for Lakers",
+          "url": "https://lakeshowlife.com/cameron-carr-should-be-given-some-of-quentin-grimes-minutes-for-lakers",
+          "source": "Lake Show Life",
+          "snippet": ""
+        },
+        {
+          "title": "Isaiah Joe (hip) questionable vs. Brooklyn",
+          "url": "https://www.nbcsports.com/fantasy/basketball/player-news/2026-10-29/isaiah-joe-hip-questionable-vs-brooklyn",
+          "source": "NBC Sports",
+          "snippet": ""
+        }
+      ],
+      "slug": "cameron-carr",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T03:00:00Z",
+      "source_fingerprint": "7f2562b03b41d92d591d1492ecc2d941f525db6d4f61ef38aae26e15c3eb0018"
+    },
+    "first_seen_at": "2026-11-02T03:59:02Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "yaxel lendeborg",
+      "traffic": "2000+",
+      "news": [
+        {
+          "title": "Warriors’ Yaxel Lendeborg is entertaining on the court, at the mic, on your phone — and he won’t stop",
+          "url": "https://www.sfchronicle.com/sports/warriors/article/yaxel-lendeborg-warriors-nba-22501076.php",
+          "source": "San Francisco Chronicle",
+          "snippet": ""
+        },
+        {
+          "title": "Why Yaxel Lendeborg could be the key to saving what's left of the Warriors' Stephen Curry era",
+          "url": "https://www.cbssports.com/nba/news/yaxel-lendeborg-saving-warriors-stephen-curry-era/",
+          "source": "CBS Sports",
+          "snippet": ""
+        },
+        {
+          "title": "Steve Kerr Calls Out NBA For Disrespecting Yaxel Lendeborg",
+          "url": "https://heavy.com/sports/nba/golden-state-warriors/steve-kerr-nba-disrespecting-yaxel-lendeborg/",
+          "source": "Heavy.com",
+          "snippet": ""
+        }
+      ],
+      "slug": "yaxel-lendeborg",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T02:50:00Z",
+      "source_fingerprint": "b374d3de9402a298afba2433bfbb62c6d21982957cfbf16e05f1e677a0a1e5bf"
+    },
+    "first_seen_at": "2026-11-02T03:59:02Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "lakers vs toronto raptors match player stats",
+      "traffic": "200+",
+      "news": [
+        {
+          "title": "Nets vs Pacers Game Overview, Match Player Stats, Injuries, Records - NBA Game on November 01, 2026",
+          "url": "https://www.covers.com/sport/basketball/nba/matchup/388641",
+          "source": "Covers.com",
+          "snippet": ""
+        },
+        {
+          "title": "Another unsustainable win",
+          "url": "https://bladesofteal.com/another-unsustainable-win-01m677mzpxgz",
+          "source": "Blades of Teal",
+          "snippet": ""
+        },
+        {
+          "title": "Will Smith scores twice as the Sharks rally from a two-goal deficit to beat the Canucks 3-2",
+          "url": "https://abc7news.com/post/will-smith-scores-sharks-rally-goal-deficit-beat-canucks-3-2/19998589/",
+          "source": "ABC7 Bay Area",
+          "snippet": ""
+        }
+      ],
+      "slug": "lakers-vs-toronto-raptors-match-player-stats",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T02:50:00Z",
+      "source_fingerprint": "8ec88fb62a3503f5b473b47521c5c1c837f397a9703faa5f4745ccb329b24807"
+    },
+    "first_seen_at": "2026-11-02T03:59:02Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "gsw game today",
+      "traffic": "500+",
+      "news": [
+        {
+          "title": "Curry's ankle-breaker on Luka highlights Warriors' stunning 25-point comeback",
+          "url": "https://www.espn.com/nba/story/_/id/50333810/stephen-curry-leads-warriors-25-point-comeback-lakers",
+          "source": "ESPN",
+          "snippet": ""
+        },
+        {
+          "title": "Warriors Overcome 25-Point Deficit in Victory Over Lakers to Open NBA Cup | Golden State Warriors",
+          "url": "https://warriors.com/news/gameday-recap-20261030",
+          "source": "NBA.com",
+          "snippet": ""
+        },
+        {
+          "title": "Stephen Curry breaks Luka Dončić's ankles as part of 25-point comeback in NBA Cup win",
+          "url": "https://sports.yahoo.com/nba/article/stephen-curry-breaks-luka-doncics-ankles-as-part-of-25-point-comeback-in-nba-cup-win-051155367.html",
+          "source": "Yahoo Sports",
+          "snippet": ""
+        }
+      ],
+      "slug": "gsw-game-today",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T02:50:00Z",
+      "source_fingerprint": "83f3192e2b0d3d07b69f697faae2efeb3ed2e10b1202ffc805ee268e158fa62a"
+    },
+    "first_seen_at": "2026-11-02T03:59:02Z",
+    "next_attempt_at": "2026-11-02T03:59:02Z",
     "attempts": 0,
     "last_error": ""
   },
@@ -336,6 +948,40 @@
     },
     "first_seen_at": "2026-11-02T01:34:44Z",
     "next_attempt_at": "2026-11-02T05:51:46Z",
+    "attempts": 1,
+    "last_error": "Gemini API failure or invalid generated content"
+  },
+  {
+    "trend": {
+      "title": "all saints' day",
+      "traffic": "200+",
+      "news": [
+        {
+          "title": "LIVE UPDATES: Undas 2026 | Nov. 2",
+          "url": "https://www.inquirer.net/494516/live-updates-undas-2026-nov-2/",
+          "source": "Inquirer.net",
+          "snippet": ""
+        },
+        {
+          "title": "Manila North Cemetery logs over 1.3 million visitors on All Saints’ Day",
+          "url": "https://newsinfo.inquirer.net/2334576/manila-north-cemetery-logs-over-1-3-million-visitors-on-all-saints-day",
+          "source": "Inquirer.net",
+          "snippet": ""
+        },
+        {
+          "title": "Over 1.4 million visit Manila cemeteries",
+          "url": "https://www.philstar.com/nation/2026/11/02/2567188/over-14-million-visit-manila-cemeteries",
+          "source": "Philstar.com",
+          "snippet": ""
+        }
+      ],
+      "slug": "all-saints-day",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T00:10:00Z",
+      "source_fingerprint": "d41c026c5e3726493020880b51e8244efa0813984760845d4ec4e021c7c51a66"
+    },
+    "first_seen_at": "2026-11-02T01:34:44Z",
+    "next_attempt_at": "2026-11-02T07:59:02Z",
     "attempts": 1,
     "last_error": "Gemini API failure or invalid generated content"
   }

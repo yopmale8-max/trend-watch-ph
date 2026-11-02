@@ -1,1 +1,308 @@
-[]
+[
+  {
+    "trend": {
+      "title": "lakers vs raptors",
+      "traffic": "1000+",
+      "news": [
+        {
+          "title": "4 Biggest Storylines: Raptors vs. Lakers",
+          "url": "https://sports.yahoo.com/articles/4-biggest-storylines-raptors-vs-110006613.html",
+          "source": "Yahoo Sports",
+          "snippet": ""
+        },
+        {
+          "title": "Lakers latest injury report: Who's out vs. Raptors on Sunday?",
+          "url": "https://basketnews.com/news-258623-lakers-latest-injury-report-vs-raptors-sunday.html",
+          "source": "BasketNews.com",
+          "snippet": ""
+        },
+        {
+          "title": "Lakers vs. Raptors Preview: Bounce back game",
+          "url": "https://www.silverscreenandroll.com/lakers-game-previews/128215/lakers-vs-raptors-discussion-injury-report-how-to-watch-tv-stream-start-time-luka-doncic-scottie-barnes",
+          "source": "Silver Screen and Roll",
+          "snippet": ""
+        }
+      ],
+      "slug": "lakers-vs-raptors",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T01:00:00Z",
+      "source_fingerprint": "abf5e61f1df2c16a589684aefa75d964a27e615dc1f280f9d65aa27cfc91fbf4"
+    },
+    "first_seen_at": "2026-11-02T01:34:44Z",
+    "next_attempt_at": "2026-11-02T01:34:44Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "gerald bantag poultry farm operation",
+      "traffic": "500+",
+      "news": [
+        {
+          "title": "No sign of ex-BuCor chief Bantag in Ifugao poultry police operation",
+          "url": "https://newsinfo.inquirer.net/2334245/no-sign-of-ex-bucor-chief-bantag-in-ifugao-poultry-police-operation",
+          "source": "Inquirer.net",
+          "snippet": ""
+        },
+        {
+          "title": "Bantag eludes arrest anew in All Saints’ Day operation",
+          "url": "https://www.philstar.com/nation/2026/11/02/2567192/bantag-eludes-arrest-anew-all-saints-day-operation",
+          "source": "Philstar.com",
+          "snippet": ""
+        },
+        {
+          "title": "Did ex-BuCor chief Bantag just evade arrest in Ifugao operation?",
+          "url": "https://www.rappler.com/newsbreak/inside-track/gerald-bantag-evade-arrest-ifugao-operation/",
+          "source": "Rappler",
+          "snippet": ""
+        }
+      ],
+      "slug": "gerald-bantag-poultry-farm-operation",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T00:40:00Z",
+      "source_fingerprint": "8c65192dc0809082cb7d7f1559cd184b5e181419ef95ebdffe49e0f9f4f8326a"
+    },
+    "first_seen_at": "2026-11-02T01:34:44Z",
+    "next_attempt_at": "2026-11-02T01:34:44Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "gold price today",
+      "traffic": "100+",
+      "news": [
+        {
+          "title": "Gold price prediction: Gold rate continues to fall or…",
+          "url": "https://www.inkl.com/news/gold-price-prediction-gold-rate-continues-to-fall-or-will-bear-movement-end-after-us-midterm-elections-results-experts-make-forecast",
+          "source": "inkl",
+          "snippet": ""
+        },
+        {
+          "title": "Midterms and Your Retirement: What's Really at Stake?",
+          "url": "https://finance.yahoo.com/markets/commodities/articles/midterms-retirement-whats-really-stake-123900032.html",
+          "source": "Yahoo Finance",
+          "snippet": ""
+        },
+        {
+          "title": "Bullion Cues: Supports face a test",
+          "url": "https://www.thehindubusinessline.com/portfolio/commodity-analysis/bullion-cues-supports-face-a-test/article71648724.ece",
+          "source": "BusinessLine",
+          "snippet": ""
+        }
+      ],
+      "slug": "gold-price-today",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T00:40:00Z",
+      "source_fingerprint": "4d54b031b835df440cfb99e78d8b153a5e729dfdc6db4c381e916e86211defc2"
+    },
+    "first_seen_at": "2026-11-02T01:34:44Z",
+    "next_attempt_at": "2026-11-02T01:34:44Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "wsl",
+      "traffic": "200+",
+      "news": [
+        {
+          "title": "Tokong, Lopez make waves in Siargao",
+          "url": "https://businessmirror.com.ph/2026/11/01/tokong-lopez-make-waves-in-siargao/",
+          "source": "BusinessMirror",
+          "snippet": ""
+        },
+        {
+          "title": "Filipino wildcard Alciso shocks Olympic champ Vaast in WSL Pro",
+          "url": "https://www.abs-cbn.com/sports/othersports/2026/11/1/filipino-wildcard-alciso-shocks-olympic-champ-vaast-in-wsl-pro-1934",
+          "source": "ABS-CBN",
+          "snippet": ""
+        },
+        {
+          "title": "Hopkins scores huge WSL upset",
+          "url": "https://tribune.net.ph/2026/10/31/hopkins-scores-huge-wsl-upset",
+          "source": "Daily Tribune",
+          "snippet": ""
+        }
+      ],
+      "slug": "wsl",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T00:40:00Z",
+      "source_fingerprint": "47d572107056dfada1472792ebc5fbf63b23fea75925f22bc5ca377cc36af28e"
+    },
+    "first_seen_at": "2026-11-02T01:34:44Z",
+    "next_attempt_at": "2026-11-02T01:34:44Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "warriors vs clippers",
+      "traffic": "2000+",
+      "news": [
+        {
+          "title": "Clippers vs. Warriors Prediction, Odds and Best NBA Prop Bets for Sunday, Nov. 1",
+          "url": "https://www.si.com/betting/clippers-vs-warriors-prediction-odds-and-best-nba-prop-bets-for-sunday-nov-1-2026",
+          "source": "Sports Illustrated",
+          "snippet": ""
+        },
+        {
+          "title": "Clippers vs. Warriors Predictions, Odds & Stats – Nov. 1",
+          "url": "https://sportssd.iheart.com/content/2026-11-01-clippers-vs-warriors-predictions-odds-stats-nov-1/",
+          "source": "San Diego Sports 760",
+          "snippet": ""
+        },
+        {
+          "title": "How to watch Clippers vs. Warriors: TV channel and streaming options for November 1",
+          "url": "https://www.nytimes.com/athletic/7744696/2026/11/01/clippers-vs-warriors-stream-how-to-watch-nov-1/",
+          "source": "The New York Times",
+          "snippet": ""
+        }
+      ],
+      "slug": "warriors-vs-clippers",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T00:30:00Z",
+      "source_fingerprint": "77d6f3e5478c34bfba499ce298cf4721f2804bc8686c022b1a48df7ed6b9ca05"
+    },
+    "first_seen_at": "2026-11-02T01:34:44Z",
+    "next_attempt_at": "2026-11-02T01:34:44Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "new england vs inter miami",
+      "traffic": "200+",
+      "news": [
+        {
+          "title": "Why Is Luis Suarez Not Playing Today for Inter Miami vs. New England Revolution?",
+          "url": "https://athlonsports.com/soccer/why-is-luis-suarez-not-playing-today-for-inter-miami-vs-new-england-revolution",
+          "source": "Athlon Sports",
+          "snippet": ""
+        },
+        {
+          "title": "Best bets today for all sports: Sunday's picks include Miami vs. New England MLS play [11/1/2026]",
+          "url": "https://www.dimers.com/news/best-bets-11-01-2026-ac",
+          "source": "Dimers",
+          "snippet": ""
+        },
+        {
+          "title": "New England Revolution vs Inter Miami live online: score, stats, goals & updates | MLS 2026",
+          "url": "https://en.as.com/soccer/new-england-revolution-vs-inter-miami-live-online-score-stats-goals-updates-mls-2026-f202611-n/",
+          "source": "Diario AS",
+          "snippet": ""
+        }
+      ],
+      "slug": "new-england-vs-inter-miami",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T00:30:00Z",
+      "source_fingerprint": "e3ebe0b6dd45e4f5500a3c3c29c8f4801399355cea8dc2eee04b700300513dec"
+    },
+    "first_seen_at": "2026-11-02T01:34:44Z",
+    "next_attempt_at": "2026-11-02T01:34:44Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "arrest",
+      "traffic": "200+",
+      "news": [
+        {
+          "title": "Police arrest man for alleged Benjamin Street home invasion",
+          "url": "https://www.michigandaily.com/news/news-briefs/police-arrest-man-for-alleged-benjamin-street-home-invasion/",
+          "source": "The Michigan Daily",
+          "snippet": ""
+        },
+        {
+          "title": "Police arrest man for alleged Benjamin Street home invasion",
+          "url": "https://cedarnews.net/newstasks/1111087/arrest-man-alleged-police-benjamin-street-home/",
+          "source": "cedarnews.net",
+          "snippet": ""
+        },
+        {
+          "title": "Ann Arbor Home Invasion: Ypsilanti Man Charged, Held on $20K Bond",
+          "url": "https://hoodline.com/2026/10/ypsilanti-man-34-charged-after-sleeping-family-s-unlocked-door-robbed/",
+          "source": "Hoodline",
+          "snippet": ""
+        }
+      ],
+      "slug": "arrest",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T00:30:00Z",
+      "source_fingerprint": "681b003702f0ad78adf0e37ee63953ea7d33993af008870eed51654e69c5596f"
+    },
+    "first_seen_at": "2026-11-02T01:34:44Z",
+    "next_attempt_at": "2026-11-02T01:34:44Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "noah clowney",
+      "traffic": "100+",
+      "news": [
+        {
+          "title": "Ausar Thompson aggression, Ron Holland awakening push Pistons past Nets",
+          "url": "https://www.freep.com/story/sports/nba/pistons/2026/10/30/pistons-game-nba-scores-brooklyn-nets/92525275007/",
+          "source": "Detroit Free Press",
+          "snippet": ""
+        },
+        {
+          "title": "Ron Holland shines as Pistons cut down winless Nets in NBA Cup opener",
+          "url": "https://www.detroitnews.com/story/sports/nba/pistons/2026/10/30/ron-holland-shines-as-pistons-cut-down-winless-nets-in-nba-cup-opener/92523176007/",
+          "source": "The Detroit News",
+          "snippet": ""
+        },
+        {
+          "title": "Detroit Pistons vs. Brooklyn Nets Live Score and Stats - October 30, 2026 Gametracker",
+          "url": "https://www.cbssports.com/nba/gametracker/recap/NBA_20261030_DET@BKN/",
+          "source": "CBS Sports",
+          "snippet": ""
+        }
+      ],
+      "slug": "noah-clowney",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T00:20:00Z",
+      "source_fingerprint": "b63b4e48d16f51c9cefcad1c43a758219a0f1f304d22ce774ffc2f741f3fc3d8"
+    },
+    "first_seen_at": "2026-11-02T01:34:44Z",
+    "next_attempt_at": "2026-11-02T01:34:44Z",
+    "attempts": 0,
+    "last_error": ""
+  },
+  {
+    "trend": {
+      "title": "all saints' day",
+      "traffic": "200+",
+      "news": [
+        {
+          "title": "LIVE UPDATES: Undas 2026 | Nov. 2",
+          "url": "https://www.inquirer.net/494516/live-updates-undas-2026-nov-2/",
+          "source": "Inquirer.net",
+          "snippet": ""
+        },
+        {
+          "title": "Manila North Cemetery logs over 1.3 million visitors on All Saints’ Day",
+          "url": "https://newsinfo.inquirer.net/2334576/manila-north-cemetery-logs-over-1-3-million-visitors-on-all-saints-day",
+          "source": "Inquirer.net",
+          "snippet": ""
+        },
+        {
+          "title": "Over 1.4 million visit Manila cemeteries",
+          "url": "https://www.philstar.com/nation/2026/11/02/2567188/over-14-million-visit-manila-cemeteries",
+          "source": "Philstar.com",
+          "snippet": ""
+        }
+      ],
+      "slug": "all-saints-day",
+      "category": "Trending topic",
+      "published_at": "2026-11-02T00:10:00Z",
+      "source_fingerprint": "d41c026c5e3726493020880b51e8244efa0813984760845d4ec4e021c7c51a66"
+    },
+    "first_seen_at": "2026-11-02T01:34:44Z",
+    "next_attempt_at": "2026-11-02T01:34:44Z",
+    "attempts": 0,
+    "last_error": ""
+  }
+]

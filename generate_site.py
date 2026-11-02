@@ -340,6 +340,184 @@ class MetaDescriptionParser(HTMLParser):
             self.timestamp += data
 
 
+class SeoMetadataParser(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.title = ""
+        self.description = ""
+        self.canonical = ""
+        self.robots = ""
+        self.headline = ""
+        self.published_at = ""
+        self.in_title = False
+        self.in_headline = False
+        self.has_article = False
+
+    def handle_starttag(self, tag, attrs):
+        attributes = dict(attrs)
+        classes = attributes.get("class", "").split()
+        if tag == "title":
+            self.in_title = True
+        elif tag == "meta" and attributes.get("name", "").lower() == "description":
+            self.description = attributes.get("content", "").strip()
+        elif tag == "meta" and attributes.get("name", "").lower() == "robots":
+            self.robots = attributes.get("content", "").strip().lower()
+        elif tag == "link" and attributes.get("rel", "").lower() == "canonical":
+            self.canonical = attributes.get("href", "").strip()
+        elif tag == "h1":
+            self.in_headline = True
+        elif tag == "article":
+            self.has_article = True
+        elif tag == "time" and "relative-date" in classes:
+            self.published_at = attributes.get("datetime", "").strip()
+
+    def handle_endtag(self, tag):
+        if tag == "title":
+            self.in_title = False
+        elif tag == "h1":
+            self.in_headline = False
+
+    def handle_data(self, data):
+        if self.in_title:
+            self.title += data
+        if self.in_headline:
+            self.headline += data
+
+
+def render_search_metadata(
+    title,
+    description,
+    canonical,
+    is_article=False,
+    is_homepage=False,
+    published_at="",
+):
+    """Renders social metadata and conservative JSON-LD for a page."""
+    tags = [
+        ("property", "og:type", "article" if is_article else "website"),
+        ("property", "og:site_name", NICHE_CONFIG["site_name"]),
+        ("property", "og:title", title),
+        ("property", "og:url", canonical),
+        ("name", "twitter:card", "summary"),
+        ("name", "twitter:title", title),
+    ]
+    if description:
+        tags.extend([
+            ("property", "og:description", description),
+            ("name", "twitter:description", description),
+        ])
+    if is_article and published_at:
+        tags.extend([
+            ("property", "article:published_time", published_at),
+            ("property", "article:modified_time", published_at),
+        ])
+    meta_html = "\n".join(
+        f'<meta {key}="{escape(name, quote=True)}" content="{escape(value, quote=True)}">'
+        for key, name, value in tags
+        if value
+    )
+    verification_token = os.environ.get("GOOGLE_SITE_VERIFICATION", "").strip()
+    if verification_token:
+        meta_html += (
+            f'\n<meta name="google-site-verification" '
+            f'content="{escape(verification_token, quote=True)}">'
+        )
+    if is_article:
+        structured_data = {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": title,
+            "mainEntityOfPage": {"@type": "WebPage", "@id": canonical},
+            "author": {"@type": "Organization", "name": NICHE_CONFIG["site_name"]},
+            "publisher": {"@type": "Organization", "name": NICHE_CONFIG["site_name"]},
+        }
+        if description:
+            structured_data["description"] = description
+        if published_at:
+            structured_data["datePublished"] = published_at
+            structured_data["dateModified"] = published_at
+    else:
+        structured_data = {
+            "@context": "https://schema.org",
+            "@type": "WebSite" if is_homepage else "WebPage",
+            "name": title,
+            "url": canonical,
+        }
+        if description:
+            structured_data["description"] = description
+    json_ld = json.dumps(structured_data, ensure_ascii=False).replace("<", "\\u003c")
+    return (
+        f"<!-- SEO_METADATA_START -->\n{meta_html}\n"
+        f'<script type="application/ld+json" id="seo-structured-data">'
+        f"{json_ld}</script>\n<!-- SEO_METADATA_END -->"
+    )
+
+
+def synchronize_search_metadata(site_url):
+    """Keeps share metadata and structured data aligned on every published HTML page."""
+    output_dir = Path(NICHE_CONFIG["output_dir"])
+    managed_metadata = re.compile(
+        r'<meta\b(?=[^>]*(?:\bproperty=["\'](?:og:|article:)|'
+        r'\bname=["\'](?:twitter:|google-site-verification)))'
+        r'[^>]*>|'
+        r'<script\b(?=[^>]*\bid=["\']seo-structured-data["\'])'
+        r'[^>]*>.*?</script>',
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    metadata_block = re.compile(
+        r"<!-- SEO_METADATA_START -->.*?<!-- SEO_METADATA_END -->",
+        flags=re.DOTALL,
+    )
+    for page_path in output_dir.glob("*.html"):
+        page = page_path.read_text(encoding="utf-8")
+        parser = SeoMetadataParser()
+        parser.feed(page)
+        if "noindex" in parser.robots:
+            continue
+        canonical = parser.canonical
+        if not canonical and site_url and page_path.name != "privacy.html":
+            canonical = (
+                f"{site_url}/" if page_path.name == "index.html"
+                else f"{site_url}/{quote(page_path.name)}"
+            )
+        if not canonical:
+            continue
+        title = parser.headline.strip() or parser.title.strip()
+        if not title:
+            continue
+        is_article = parser.has_article and bool(parser.published_at)
+        metadata = render_search_metadata(
+            title,
+            parser.description,
+            canonical,
+            is_article=is_article,
+            is_homepage=page_path.name == "index.html",
+            published_at=parser.published_at,
+        )
+        existing_block = metadata_block.search(page)
+        if existing_block:
+            updated_page = (
+                page[:existing_block.start()]
+                + metadata
+                + page[existing_block.end():]
+            )
+        else:
+            updated_page = managed_metadata.sub("", page)
+            updated_page, replacements = re.subn(
+                r"</head\s*>",
+                lambda _: f"    {metadata}\n</head>",
+                updated_page,
+                count=1,
+                flags=re.IGNORECASE,
+            )
+            if not replacements:
+                raise ValueError(
+                    f"Cannot add search metadata: {page_path} has no closing head tag"
+                )
+        if updated_page != page:
+            page_path.write_text(updated_page, encoding="utf-8")
+
+
 def parse_updated_at(value):
     if not value:
         return ""
@@ -448,6 +626,26 @@ def has_source_evidence(trend):
         for item in trend.get("news", [])
         if isinstance(item, dict)
     )
+
+
+def has_multiple_source_publishers(trend):
+    """Requires independently hosted source links before auto-publishing an article."""
+    source_hosts = set()
+    for item in trend.get("news", []):
+        if (
+            not isinstance(item, dict)
+            or not isinstance(item.get("title"), str)
+            or not item["title"].strip()
+        ):
+            continue
+        url = item.get("url")
+        if not is_valid_http_url(url):
+            continue
+        host = (urlsplit(url).hostname or "").lower()
+        if host.startswith("www."):
+            host = host[4:]
+        source_hosts.add(host)
+    return len(source_hosts) >= 2
 
 
 def is_daily_quota_error(error):
@@ -1034,6 +1232,7 @@ def generate_ai_content(trend, model=PRIMARY_GEMINI_MODEL):
     Accuracy requirements:
     - Do not invent or assume events, causes, dates, schedules, scores, statistics, quotes, biographies, local audience behavior, or Philippine-specific facts.
     - Attribute claims to the headline/publisher in the supplied data; headlines are leads, not proof of the underlying story.
+    - The publishing gate requires links from two publisher domains; that does not prove independent corroboration. Attribute each claim precisely and do not imply the outlets independently verified one another.
     - Never claim to know why a topic is trending unless the supplied reporting explicitly establishes that relationship.
     - For legal, crime, safety, health, or financial topics, use precise attribution; distinguish allegations from established facts, presume innocence, and do not state guilt, arrest, charges, warrant status, responsibility, or local impact unless the supplied reporting explicitly supports that exact claim.
     - Add Background or Timeline sections only when the source headlines or snippets support concrete, attributable facts. Use exact dates only when a source explicitly gives them; the search-listing date is not an event date. If important context cannot be established from the available evidence, say what remains unknown briefly or output exactly: SKIP when the article would otherwise mislead.
@@ -1227,6 +1426,13 @@ def build_page_html(trend, ai_data):
         f'<link rel="canonical" href="{escape(site_url, quote=True)}/{escape(trend["slug"], quote=True)}.html">'
         if site_url else ""
     )
+    search_metadata = render_search_metadata(
+        ai_data["headline"],
+        ai_data["meta_description"],
+        f"{site_url}/{escape(trend['slug'], quote=True)}.html" if site_url else "",
+        is_article=True,
+        published_at=generated_at,
+    ) if site_url else ""
     source_cards = []
     for item in trend["news"]:
         title = item.get("title")
@@ -1272,6 +1478,7 @@ def build_page_html(trend, ai_data):
     <meta name="description" content="{escaped_description}">
     <meta name="robots" content="index, follow">
     {canonical}
+    {search_metadata}
     <style>
         :root {{ --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --accent: #38bdf8; --muted: #94a3b8; }}
         body {{ font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; margin: 0; padding: 0; }}
@@ -1724,6 +1931,14 @@ def main():
             pending.pop(trend["slug"], None)
             skipped_count += 1
             continue
+        if not has_multiple_source_publishers(trend):
+            print(
+                f"Skipping trend without linked reports from two publishers: "
+                f"{trend['slug']}"
+            )
+            pending.pop(trend["slug"], None)
+            skipped_count += 1
+            continue
         remaining_requests = MAX_TREND_GENERATION_CALLS - ai_calls
         if remaining_requests <= 0:
             print(
@@ -1834,6 +2049,7 @@ def main():
         
     update_index_page(successfully_generated)
     print(f"Homepage archive updated (up to {MAX_HOMEPAGE_TREND_CARDS} generated trend cards).")
+    synchronize_search_metadata(site_url)
 
     if site_url:
         sitemap_xml = generate_sitemap(site_url)

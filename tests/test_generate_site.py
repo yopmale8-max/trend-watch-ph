@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import tempfile
 import unittest
 import xml.etree.ElementTree as ET
@@ -105,6 +106,88 @@ class GoogleTrendsFeedTests(unittest.TestCase):
         self.assertFalse(generate_site.has_source_evidence({
             "news": [{"title": "Headline", "url": "javascript:alert(1)"}],
         }))
+
+    def test_auto_publish_requires_two_distinct_source_publishers(self):
+        self.assertFalse(generate_site.has_multiple_source_publishers({
+            "news": [{"title": "Headline", "url": "https://example.com/story"}],
+        }))
+        self.assertFalse(generate_site.has_multiple_source_publishers({
+            "news": [
+                {"title": "First", "url": "https://www.example.com/one"},
+                {"title": "Second", "url": "https://example.com/two"},
+            ],
+        }))
+        self.assertTrue(generate_site.has_multiple_source_publishers({
+            "news": [
+                {"title": "First", "url": "https://www.example.com/one"},
+                {"title": "Second", "url": "https://another.example/two"},
+            ],
+        }))
+
+    def test_search_metadata_has_article_social_tags_and_structured_data(self):
+        with patch.dict(os.environ, {"GOOGLE_SITE_VERIFICATION": "sample-token"}):
+            markup = generate_site.render_search_metadata(
+                "A Source-Grounded Article",
+                "A concise article summary.",
+                "https://example.com/story.html",
+                is_article=True,
+                published_at="2026-11-02T00:00:00Z",
+            )
+        structured_data = re.search(
+            r'<script type="application/ld\+json" id="seo-structured-data">(.*?)</script>',
+            markup,
+        ).group(1)
+        article_schema = json.loads(structured_data)
+
+        self.assertIn('property="og:type" content="article"', markup)
+        self.assertIn('name="twitter:card" content="summary"', markup)
+        self.assertIn(
+            'name="google-site-verification" content="sample-token"',
+            markup,
+        )
+        self.assertEqual(article_schema["@type"], "Article")
+        self.assertEqual(article_schema["headline"], "A Source-Grounded Article")
+        self.assertEqual(
+            article_schema["datePublished"],
+            "2026-11-02T00:00:00Z",
+        )
+
+    def test_search_metadata_sync_is_idempotent_for_existing_pages(self):
+        original_output_dir = generate_site.NICHE_CONFIG["output_dir"]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            page_path = Path(temp_dir) / "story.html"
+            page_path.write_text(
+                '<html><head><title>Story</title>'
+                '<meta name="description" content="Summary">'
+                '<link rel="canonical" href="https://example.com/story.html">'
+                '</head><body><article><h1>Story</h1>'
+                '<time class="relative-date" datetime="2026-11-02T00:00:00Z">'
+                '</time></article></body></html>',
+                encoding="utf-8",
+            )
+            (Path(temp_dir) / "alias.html").write_text(
+                '<html><head><title>Alias</title>'
+                '<meta name="robots" content="noindex, follow">'
+                '<link rel="canonical" href="https://example.com/alias.html">'
+                '</head></html>',
+                encoding="utf-8",
+            )
+            generate_site.NICHE_CONFIG["output_dir"] = temp_dir
+            try:
+                generate_site.synchronize_search_metadata("https://example.com")
+                first_result = page_path.read_text(encoding="utf-8")
+                generate_site.synchronize_search_metadata("https://example.com")
+                second_result = page_path.read_text(encoding="utf-8")
+                alias_result = (Path(temp_dir) / "alias.html").read_text(
+                    encoding="utf-8"
+                )
+            finally:
+                generate_site.NICHE_CONFIG["output_dir"] = original_output_dir
+
+        self.assertEqual(first_result, second_result)
+        self.assertEqual(first_result.count('property="og:type"'), 1)
+        self.assertEqual(first_result.count('id="seo-structured-data"'), 1)
+        self.assertNotIn("seo-structured-data", alias_result)
 
 
 class ArticleCopyTests(unittest.TestCase):
@@ -267,6 +350,9 @@ class ArticleCopyTests(unittest.TestCase):
         self.assertIn("Intl.RelativeTimeFormat", html)
         self.assertIn("Last updated ${label}", html)
         self.assertNotIn("Generated ${label}", html)
+        self.assertIn('property="og:type" content="article"', html)
+        self.assertIn('name="twitter:card" content="summary"', html)
+        self.assertIn('id="seo-structured-data"', html)
         self.assertIn("navigator.share", html)
 
     def test_related_trend_teasers_must_offer_more_than_a_nonconfirmation(self):
@@ -396,6 +482,7 @@ class GeminiRetryTests(unittest.TestCase):
         self.assertIn("Add Background or Timeline sections only", prompt)
         self.assertIn("Do not refer to", prompt)
         self.assertIn("Vary accurate, specific headline structures", prompt)
+        self.assertIn("does not prove independent corroboration", prompt)
         self.assertIn("Do not describe this AI-assisted article as reviewed", prompt)
 
     def test_scheduled_run_respects_generation_request_cap(self):
@@ -417,6 +504,7 @@ class GeminiRetryTests(unittest.TestCase):
                     patch.object(generate_site, "synchronize_canonical_urls"),
                     patch.object(generate_site, "fetch_google_trends", return_value=trends),
                     patch.object(generate_site, "has_source_evidence", return_value=True),
+                    patch.object(generate_site, "has_multiple_source_publishers", return_value=True),
                     patch.object(
                         generate_site,
                         "generate_ai_content_with_retry",
@@ -613,6 +701,7 @@ class GeminiRetryTests(unittest.TestCase):
                     patch.object(generate_site, "synchronize_canonical_urls"),
                     patch.object(generate_site, "fetch_google_trends", return_value=trends),
                     patch.object(generate_site, "has_source_evidence", return_value=True),
+                    patch.object(generate_site, "has_multiple_source_publishers", return_value=True),
                     patch.object(
                         generate_site,
                         "generate_ai_content_with_retry",
@@ -980,6 +1069,7 @@ class GeminiRetryTests(unittest.TestCase):
                     patch.object(generate_site, "synchronize_canonical_urls"),
                     patch.object(generate_site, "fetch_google_trends", return_value=[trend]),
                     patch.object(generate_site, "has_source_evidence", return_value=True),
+                    patch.object(generate_site, "has_multiple_source_publishers", return_value=True),
                     patch.object(
                         generate_site,
                         "generate_ai_content_with_retry",
@@ -999,6 +1089,7 @@ class GeminiRetryTests(unittest.TestCase):
                     patch.object(generate_site, "get_site_url", return_value=""),
                     patch.object(generate_site, "synchronize_canonical_urls"),
                     patch.object(generate_site, "fetch_google_trends", return_value=[]),
+                    patch.object(generate_site, "has_multiple_source_publishers", return_value=True),
                     patch.object(generate_site, "generate_ai_content_with_retry",
                                  return_value=(
                                      {
@@ -1084,6 +1175,7 @@ class SiteOptimizationTests(unittest.TestCase):
                         patch.object(generate_site, "synchronize_canonical_urls"),
                         patch.object(generate_site, "fetch_google_trends", return_value=[trend]),
                         patch.object(generate_site, "has_source_evidence", return_value=True),
+                        patch.object(generate_site, "has_multiple_source_publishers", return_value=True),
                         patch.object(
                             generate_site,
                             "generate_ai_content_with_retry",

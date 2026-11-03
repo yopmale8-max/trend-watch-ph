@@ -230,6 +230,16 @@ class GoogleTrendsFeedTests(unittest.TestCase):
 
 
 class ArticleCopyTests(unittest.TestCase):
+    def test_article_generation_defaults_to_pro_with_flash_fallback(self):
+        self.assertEqual(
+            generate_site.PRIMARY_GEMINI_MODEL,
+            "gemini-3.1-pro-preview",
+        )
+        self.assertEqual(
+            generate_site.FALLBACK_GEMINI_MODEL,
+            "gemini-3.6-flash",
+        )
+
     def valid_article(self, headline="Where to check the latest PBA schedule"):
         return {
             "status": "SUCCESS",
@@ -238,42 +248,30 @@ class ArticleCopyTests(unittest.TestCase):
                 "Check the PBA's official channels for current fixtures and changes."
             ),
             "html_content": (
-                "<p>Looking for the latest PBA fixture? This guide explains what the "
-                "trend feed can confirm, where the limits are, and which official "
-                "source to check before making plans.</p>"
+                "<p>Looking for the latest PBA fixtures? The league's official schedule "
+                "is the best place to confirm game dates, teams, and venue changes.</p>"
                 '<div class="key-takeaways"><h3>Quick Takeaways</h3><ul>'
-                "<li>The feed lists a schedule query, not a confirmed fixture.</li>"
-                "<li>Official league listings are the best place to check changes.</li>"
-                "<li>Confirm venue and time close to game day.</li>"
+                "<li>Example Publisher reports that the league shared a fixture update.</li>"
+                "<li>The PBA's official schedule is the primary source for current details.</li>"
+                "<li>Check for venue or time changes before attending.</li>"
                 "</ul></div>"
-                "<h2>What We Know</h2>"
-                "<p>The feed shows that this query appeared in its Philippines results. "
-                "It does not identify a game, date, team, or reason for the search interest. "
-                "That distinction matters because a query is not itself a fixture listing.</p>"
-                "<h2>What Current Sources Report</h2>"
-                "<p>The supplied source coverage points readers toward league information, "
-                "but it does not verify a specific upcoming game. Check the official PBA "
-                "listing for an event's date, venue, participating teams, and any changes. "
-                "Do not rely on an older schedule when planning a trip.</p>"
+                "<h2>What's Happening</h2>"
+                "<p>Reports from Example Publisher say the league has shared a fixture "
+                "update, but the available report does not name a specific upcoming game. "
+                "The PBA's schedule provides the event details and any later revisions.</p>"
                 "<h2>Philippine Context</h2>"
-                "<p>The Philippines label describes the feed's geographic scope. It cannot "
-                "tell us what an individual searched for or whether they plan to attend. "
-                "For a local game, confirm the details with the league before travelling.</p>"
-                "<h2>What to Check Next</h2>"
-                "<p>Open the PBA's official event information and check the date and venue. "
-                "If you need broadcast details, verify the specific game with the league "
-                "and broadcaster because coverage can vary by event.</p>"
+                "<p>The Philippine Basketball Association (PBA) is the country's top "
+                "professional men's basketball league. Conference standings can shape "
+                "playoff races, making official fixtures useful for fans planning to follow "
+                "a team or attend a game.</p>"
                 "<h2>Frequently Asked Questions</h2>"
                 '<div class="faq-list">'
-                '<div class="faq-card"><h3>Does this trend show today\'s schedule?</h3>'
-                "<p>No. It shows a query in the feed, not current fixtures. Use the "
-                "official league listing to check today's schedule and changes.</p></div>"
-                '<div class="faq-card"><h3>Why was the schedule searched?</h3>'
-                "<p>The feed does not explain why. It cannot establish that a specific "
-                "game or announcement prompted the searches.</p></div>"
-                '<div class="faq-card"><h3>Where should I check before travelling?</h3>'
-                "<p>Check the PBA's official event listing for the latest venue and time, "
-                "then verify any last-minute updates before leaving.</p></div>"
+                '<div class="faq-card"><h3>Where can I verify game details?</h3>'
+                "<p>Use the PBA's official schedule and event announcements for confirmed "
+                "dates, venues, and changes.</p></div>"
+                '<div class="faq-card"><h3>Can fixtures change after publication?</h3>'
+                "<p>Yes. Check for league updates close to game day before making travel "
+                "or viewing plans.</p></div>"
                 "</div>"
             ),
         }
@@ -287,18 +285,33 @@ class ArticleCopyTests(unittest.TestCase):
             "Where to Check the Latest PBA Schedule",
         )
         self.assertTrue(validated["html_content"].startswith("<p>Looking for"))
+        self.assertIn("<h2>What&#x27;s Happening</h2>", validated["html_content"])
+        self.assertIn("<h2>Philippine Context</h2>", validated["html_content"])
         with self.assertRaisesRegex(ValueError, "headline"):
             generate_site.validate_ai_content(
                 self.valid_article("A" * 91)
             )
 
+    def test_validation_requires_the_new_happening_and_context_sections(self):
+        article = self.valid_article()
+        article["html_content"] = re.sub(
+            r"<h2>Philippine Context</h2>.*?(?=<h2>)",
+            "",
+            article["html_content"],
+            count=1,
+            flags=re.DOTALL,
+        )
+
+        with self.assertRaisesRegex(ValueError, "required sections"):
+            generate_site.validate_ai_content(article)
+
     def test_validation_allows_source_supported_background_and_timeline_sections(self):
         article = self.valid_article()
         article["html_content"] = article["html_content"].replace(
-            "<h2>Philippine Context</h2>",
+            "<h2>Frequently Asked Questions</h2>",
             "<h2>Background</h2><p>Background details from reporting.</p>"
             "<h2>Timeline</h2><p>A dated development from reporting.</p>"
-            "<h2>Philippine Context</h2>",
+            "<h2>Frequently Asked Questions</h2>",
         )
 
         validated = generate_site.validate_ai_content(article)
@@ -306,15 +319,45 @@ class ArticleCopyTests(unittest.TestCase):
         self.assertIn("<h2>Background</h2>", validated["html_content"])
         self.assertIn("<h2>Timeline</h2>", validated["html_content"])
 
+    def test_validation_allows_omitting_an_unhelpful_faq_section(self):
+        article = self.valid_article()
+        article["html_content"] = article["html_content"].split(
+            "<h2>Frequently Asked Questions</h2>"
+        )[0]
+
+        validated = generate_site.validate_ai_content(article)
+
+        self.assertNotIn("<h2>Frequently Asked Questions</h2>", validated["html_content"])
+        self.assertIn("<h2>Philippine Context</h2>", validated["html_content"])
+
+    def test_validation_rejects_faq_heading_without_faq_cards(self):
+        article = self.valid_article()
+        article["html_content"] = article["html_content"].split(
+            "<h2>Frequently Asked Questions</h2>"
+        )[0] + "<h2>Frequently Asked Questions</h2>"
+
+        with self.assertRaisesRegex(ValueError, "FAQ heading"):
+            generate_site.validate_ai_content(article)
+
     def test_validation_rejects_background_before_the_required_sections(self):
         article = self.valid_article()
         article["html_content"] = article["html_content"].replace(
-            "<h2>What We Know</h2>",
+            "<h2>What's Happening</h2>",
             "<h2>Background</h2><p>Unsupported placement.</p>"
-            "<h2>What We Know</h2>",
+            "<h2>What's Happening</h2>",
         )
 
         with self.assertRaisesRegex(ValueError, "optional section"):
+            generate_site.validate_ai_content(article)
+
+    def test_validation_rejects_article_production_meta_language(self):
+        article = self.valid_article()
+        article["html_content"] = article["html_content"].replace(
+            "Reports from Example Publisher",
+            "According to the trend signal, Example Publisher",
+        )
+
+        with self.assertRaisesRegex(ValueError, "meta-language"):
             generate_site.validate_ai_content(article)
 
     def test_headline_title_case_handles_colons_and_acronyms(self):
@@ -555,7 +598,7 @@ class GeminiRetryTests(unittest.TestCase):
             self.assertIsNone(generate_site.generate_ai_content(trend))
 
         prompt = generate.call_args.kwargs["contents"]
-        self.assertIn("answer a practical question", prompt)
+        self.assertIn("question the reader wants answered", prompt)
         self.assertIn("Topic-specific editorial direction:", prompt)
         self.assertIn("fixtures, results, tickets, or official coverage", prompt)
         self.assertIn("reader-first article", prompt)
@@ -569,6 +612,12 @@ class GeminiRetryTests(unittest.TestCase):
         self.assertIn("does not prove independent corroboration", prompt)
         self.assertIn("Do not describe this AI-assisted article as reviewed", prompt)
         self.assertIn("The fixture is scheduled for a verified date.", prompt)
+        self.assertIn("The Frequently Asked Questions section is optional.", prompt)
+        self.assertIn("Do not repeat the same uncertainty or fact", prompt)
+        self.assertIn("stable, widely established background knowledge", prompt)
+        self.assertIn("Do not refer to", prompt)
+        self.assertIn("<h2>What's Happening</h2>", prompt)
+        self.assertIn("<h2>Philippine Context</h2>", prompt)
 
     def test_scheduled_run_respects_generation_request_cap(self):
         trends = [

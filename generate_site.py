@@ -40,8 +40,8 @@ REQUIRED_CONTENT_HEADINGS = [
     "What We Know",
     "What Current Sources Report",
     "What to Check Next",
-    "Frequently Asked Questions",
 ]
+FAQ_CONTENT_HEADING = "Frequently Asked Questions"
 OPTIONAL_CONTENT_HEADINGS = {"Background", "Timeline", "Philippine Context"}
 MAX_HOMEPAGE_TREND_CARDS = 50
 # Six scheduled runs can use at most 18 requests, including source review.
@@ -55,7 +55,7 @@ GEMINI_RETRY_BASE_DELAY_SECONDS = 4
 GEMINI_RETRY_MAX_DELAY_SECONDS = 30
 MAX_GEMINI_INLINE_RETRY_DELAY_SECONDS = 30
 RETRYABLE_GEMINI_STATUS_CODES = {408, 500, 502, 503, 504}
-PRIMARY_GEMINI_MODEL = "gemini-3.8-flash"
+PRIMARY_GEMINI_MODEL = "gemini-3.1-pro-preview"
 FALLBACK_GEMINI_MODEL = os.environ.get(
     "GEMINI_FALLBACK_MODEL",
     "gemini-3.6-flash",
@@ -112,6 +112,17 @@ EDITORIAL_GUIDANCE = {
         "local recommendation is confirmed unless the supplied sources support it."
     ),
 }
+
+GEMINI_PRO_WRITING_GUIDE = (
+    "Write like a polished, confident explain-the-news editor for readers in the Philippines. "
+    "Use clean, conversational English with short, confident sentences and compact paragraphs. "
+    "Open with a reader-first lead that states the clearest supported answer or limitation within "
+    "the first two sentences. Make the article feel useful and credible on mobile: direct takeaways, "
+    "clear transitions, and no filler or generic trend boilerplate. Avoid recycled phrases such as "
+    "\"what's happening\", \"it may be trending\", or \"the trend is unclear\" unless the evidence truly "
+    "supports that wording. Keep the tone warm and informative, not hype-driven, and never force slang, "
+    "Taglish, or local references if they are not grounded in the evidence."
+)
 
 # Negative keywords to protect domain reputation and ad policy compliance
 BLOCKED_KEYWORDS = [
@@ -651,8 +662,10 @@ def has_multiple_source_publishers(trend):
     return len(source_hosts) >= 2
 
 
-def fetch_source_article_evidence(trend):
+def fetch_source_article_evidence(trend, minimum_publishers=2):
     """Fetches readable linked reporting for source-grounded article generation."""
+    if minimum_publishers < 1:
+        raise ValueError("At least one source publisher is required.")
     source_articles = []
     seen_hosts = set()
     for item in trend.get("news", [])[:MAX_SOURCE_ARTICLES_FOR_GENERATION]:
@@ -687,7 +700,7 @@ def fetch_source_article_evidence(trend):
         (urlsplit(item["url"]).hostname or "").lower().removeprefix("www.")
         for item in source_articles
     }
-    if len(source_hosts) < 2:
+    if len(source_hosts) < minimum_publishers:
         return False
     trend["source_articles"] = source_articles
     return True
@@ -1015,10 +1028,14 @@ def validate_ai_content(ai_data):
     parser.close()
     if not parser.valid or parser.stack:
         raise ValueError("AI HTML contains unsupported or unbalanced markup")
-    expected_headings = iter(REQUIRED_CONTENT_HEADINGS)
-    remaining_headings = list(expected_headings)
+    remaining_headings = list(REQUIRED_CONTENT_HEADINGS)
     seen_optional_headings = set()
     for heading in parser.headings:
+        if heading == FAQ_CONTENT_HEADING:
+            if remaining_headings or FAQ_CONTENT_HEADING in seen_optional_headings:
+                raise ValueError("AI HTML contains an FAQ section in an invalid position")
+            seen_optional_headings.add(FAQ_CONTENT_HEADING)
+            continue
         if heading in OPTIONAL_CONTENT_HEADINGS:
             if (
                 len(remaining_headings) != len(REQUIRED_CONTENT_HEADINGS) - 2
@@ -1033,12 +1050,15 @@ def validate_ai_content(ai_data):
         raise ValueError("AI HTML must contain the required sections in order")
     if parser.takeaway_container_count != 1 or not 2 <= parser.takeaway_count <= 3:
         raise ValueError("AI HTML must contain two or three quick takeaways")
-    if (
-        parser.faq_list_count != 1
-        or parser.faq_card_count < 1
+    has_faq_heading = FAQ_CONTENT_HEADING in seen_optional_headings
+    has_faq_list = parser.faq_list_count == 1
+    if parser.faq_list_count > 1 or has_faq_heading != has_faq_list:
+        raise ValueError("AI HTML must include an FAQ heading only when it has an FAQ list")
+    if has_faq_list and (
+        parser.faq_card_count < 1
         or parser.faq_question_count != parser.faq_card_count
     ):
-        raise ValueError("AI HTML must contain at least one FAQ card with a question")
+        raise ValueError("Each FAQ card must contain exactly one question")
     if parser.faq_answer_count != parser.faq_card_count:
         raise ValueError("Each FAQ card must contain exactly one answer paragraph")
 
@@ -1294,7 +1314,8 @@ def generate_ai_content(trend, model=PRIMARY_GEMINI_MODEL):
     - Identify one concrete question a reader is likely trying to answer and give the best supported answer near the start.
     - Improve the draft using specific, attributable details from the fetched source pages; do not merely restate the trend or paraphrase headlines.
     - Add distinct explanation, comparison, or practical context only when the source text supports it. Link-worthy source detail and clear synthesis are more valuable than length.
-    - Remove repeated caveats, generic filler, empty FAQs, and repeated directions to "check official sources." Keep only useful next steps.
+    - Remove repeated caveats, generic filler, and repeated directions to "check official sources." Keep only useful next steps.
+    - Give each section a distinct job: explain the supported answer, report attributable source details, then give a practical next step. Do not repeat the same uncertainty or fact in the lead, takeaways, body, and FAQ.
     - Use local context only when an actual Philippines-specific fact appears in the source evidence.
     - If the sources do not support a clear, useful answer, output exactly: SKIP. Do not pad the article to meet a word count.
 
@@ -1313,7 +1334,7 @@ def generate_ai_content(trend, model=PRIMARY_GEMINI_MODEL):
     - Include a source-linked date, named authority, location, or timeline only when present in the supplied page text. RSS links alone do not prove the linked article's contents.
     - Topic-specific editorial direction: {editorial_guidance}
     - If the headlines are too vague, unsupported, or repetitive to answer a useful reader question, output exactly: SKIP
-    - Keep takeaways, FAQs, and the meta description grounded in the supplied evidence. Include only FAQs that answer a distinct likely reader question.
+    - Keep takeaways, any FAQ, and the meta description grounded in the supplied evidence. Add FAQs only when the evidence supports a distinct, useful answer; omit the FAQ section entirely if it would repeat the article.
 
     Editorial voice and copy:
     - Write in clear, conversational English that feels natural to Filipino readers. Be warm and confident about verified facts, but measured about uncertainty. Do not force slang, Taglish, or local references.
@@ -1325,6 +1346,7 @@ def generate_ai_content(trend, model=PRIMARY_GEMINI_MODEL):
     - Make the final section useful and conclusive: say what readers can verify next or what remains unknown, without a forced call to action.
     - Vary accurate, specific headline structures; do not reuse a single "what's confirmed" formula. Use title case. Use a "why it's trending" promise only when the supplied reporting establishes the reason.
     - Make the headline intriguing through reader value, not exaggeration. Avoid clickbait, unsupported urgency, "everyone", "exploding", and "the real reason."
+    - {GEMINI_PRO_WRITING_GUIDE}
 
     Output requirements:
     - Return exactly one valid JSON object with exactly these four keys and no additional text or Markdown fences:
@@ -1332,11 +1354,12 @@ def generate_ai_content(trend, model=PRIMARY_GEMINI_MODEL):
       "status": "SUCCESS",
       "headline": "An accurate, reader-focused headline under 90 characters.",
       "meta_description": "A concise, accurate summary under 160 characters.",
-      "html_content": "<p>A concise reader-focused opening...</p><div class=\\"key-takeaways\\"><h3>Quick Takeaways</h3><ul><li>...</li><li>...</li></ul></div><h2>What We Know</h2><p>...</p><h2>What Current Sources Report</h2><p>...</p><h2>What to Check Next</h2><p>...</p><h2>Frequently Asked Questions</h2><div class=\\"faq-list\\"><div class=\\"faq-card\\"><h3>Question?</h3><p>Answer...</p></div></div>"
+      "html_content": "<p>A concise reader-focused opening...</p><div class=\\"key-takeaways\\"><h3>Quick Takeaways</h3><ul><li>...</li><li>...</li></ul></div><h2>What We Know</h2><p>...</p><h2>What Current Sources Report</h2><p>...</p><h2>What to Check Next</h2><p>...</p>"
     }}
     - Use only <div class="key-takeaways">, <div class="faq-list">, <div class="faq-card">, <h2>, <h3>, <p>, <ul>, <li>, and <strong> markup. Do not add any other attributes.
     - Begin with one concise lead paragraph, then include two or three plain-language takeaway bullets and the required h2 sections in order. Background, Timeline, and Philippine Context are optional; add only sections with distinct, useful, source-supported facts.
-    - Include one or more detailed, relevant FAQ cards only when each adds a distinct answer; each card has one h3 question and one p answer inside the faq-list.
+    - The Frequently Asked Questions section is optional. Include it only when at least one evidence-grounded question adds useful information not already answered; otherwise omit both the heading and FAQ list.
+    - In What We Know, answer the reader's question without repeating the lead. In What Current Sources Report, add specific, attributed reporting rather than restating the search signal. In What to Check Next, give only a practical next step that adds value.
     - Keep the article as concise as the evidence permits. Make every section add distinct information; do not pad for length, copy takeaway sentences into the body, or repeat the same answer across FAQs.
     - Use direct, natural language; avoid search-engine filler, generic trend explanations, unsupported urgency, and fabricated local relevance.
     - Do not describe this AI-assisted article as reviewed or fact-checked by a person.
